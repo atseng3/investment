@@ -1,0 +1,22 @@
+body {
+	/*background: black;*/
+}
+aside {
+	width: 10%;
+	height: 100%;
+	display: inline-block;
+	vertical-align: top;
+}
+article {
+	width: 89%;
+	height: 100%;
+	display: inline-block;
+}
+/*table, th, td {
+	border: 1px solid black;
+    border-collapse: collapse;
+}*/
+th, td {
+    padding: 5px;
+	text-align: center;
+}
