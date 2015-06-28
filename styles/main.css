@@ -13,13 +13,45 @@ aside {
 	font-weight: 300;
 }
 article {
+	color: #FFF;
+	text-align: center;
 	width: 84%;
 	height: 100%;
 	display: inline-block;
 }
+
+table {
+	margin: auto;
+	width: 80%;
+	border-collapse: collapse; 
+}
+tr {
+	height: 65px;
+	margin-bottom: 20px;
+}
+
 th, td {
-    padding: 5px;
-	text-align: center;
+	padding: 5px;
+	text-align: left;
+	font-size: 16px;
+}
+
+#chart-list th, td {
+	color: #FFF;
+	font-weight: 100;
+}
+
+#watchlist th, td {
+	color: #21CE99;
+}
+#watchlist tr {
+	border-bottom: 1px solid #ACB0B3;
+}
+#watchlist td.symbol {
+	color: #ACB0B3; 
+}
+.num-shares {
+	font-size: 12px;
 }
 .tab {
 	background: #171D24;
@@ -29,7 +61,7 @@ th, td {
 	padding-left: 10px;
 }
 
-.selected {
+.tab.selected {
 	-moz-box-shadow: inset -5px 0px 0px 0px #F9523A;
 	-webkit-box-shadow: inset -5px 0px 0px 0px #F9523A;
 	box-shadow: inset -5px 0px 0px 0px #F9523A;
@@ -62,3 +94,45 @@ th, td {
 	letter-spacing: 2.32px;
 }
 
+.market-value {
+	font-size: 64px;
+	font-weight: 100;
+}
+
+.market-value__sign {
+	font-size: 32px;
+}
+
+.market-value__cents {
+	font-size: 32px;
+}
+
+.day-gain {
+	color: #F9523A;
+	font-size: 16px;
+}
+
+.day-gain__span {
+	color: #ACB0B3;
+}
+
+.chart {
+	margin: auto;
+	/*width: 80%;*/
+	text-align: center;
+	display: table;
+	list-style-type: none;
+	margin: 0 auto;
+}
+
+.chart-range {
+	width: 83px;
+	margin-left: auto;
+	margin-right: auto;
+	float: left;
+	/*padding: 0 3%;*/
+}
+
+.chart-range-middle {
+	margin: 0 1%;
+}
