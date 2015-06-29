@@ -13,7 +13,7 @@ aside {
 	font-weight: 300;
 }
 article {
-	color: #FFF;
+	color: #21CE99;
 	text-align: center;
 	width: 84%;
 	height: 100%;
@@ -37,7 +37,7 @@ th, td {
 }
 
 #chart-list th, td {
-	color: #FFF;
+	color: #21CE99;
 	font-weight: 100;
 }
 
@@ -59,6 +59,7 @@ th, td {
 	height: 50px;
 	line-height: 50px;
 	padding-left: 10px;
+	cursor: pointer;
 }
 
 .tab.selected {
