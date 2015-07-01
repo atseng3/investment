@@ -50,6 +50,10 @@ th, td {
 	font-weight: 500;
 }
 
+.chart-range {
+	cursor: pointer;
+}
+
 .chart-range.selected {
 	color: #FFF;
 	border-bottom: 3px solid #21CE99;

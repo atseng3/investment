@@ -11,7 +11,7 @@
 // http://chartapi.finance.yahoo.com/instrument/1.0/TSLA/chartdata;type=quote;range=1m/json
 
 window.Investments = {
-	chartAPI: 'http://chartapi.finance.yahoo.com/instrument/1.0/',
+	chartAPI: 'https://chartapi.finance.yahoo.com/instrument/1.0/',
 	chartQuote: '/chartdata;type=quote;range=',
 	yahooYQL: 'https://query.yahooapis.com/v1/public/yql?q=',
 	quoteURL: 'select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(',
@@ -29,24 +29,32 @@ window.Investments = {
 	},
 	portfolio: {
 		TSLA: {
-			// shares: 1000,
-			// cost: 150000
-			shares: 608,
-			cost: 119287
+			shares: 1000,
+			cost: 150000
 		},
 		AMBA: {
-			// shares: 2000,
-			// cost: 150000
-			shares: 1758,
-			cost: 200000
+			shares: 2000,
+			cost: 150000
 		},
 		UA: {
-			// shares: 1000,
-			// cost: 60000
-			shares: 409,
-			cost: 33508
+			shares: 1000,
+			cost: 60000
 		}
 	},
+	// portfolio: {
+	// 	TSLA: {
+	// 		shares: 608,
+	// 		cost: 119287
+	// 	},
+	// 	AMBA: {
+	// 		shares: 1758,
+	// 		cost: 200000
+	// 	},
+	// 	UA: {
+	// 		shares: 409,
+	// 		cost: 33508
+	// 	}
+	// },
 	quotes: {
 
 	},
@@ -55,14 +63,15 @@ window.Investments = {
 							'<div class="day-gain <%= dayPLClass %>"><%= dayPL %> (<%= dayPercent %>%) <span class="day-gain__span">TODAY</span></div>' +
 
 							'<table id="chart-list">' + 
+								'<svg id="chart" width="900" height="500"></svg>' +
 								'<tr class="<%= dayPLClass %>">' + 
 									'<th class="chart-range selected" data-range="1d">1 DAY</th>' +
-									'<th data-range="5d">5 DAYS</th>' +
-									'<th data-range="1m">1 MONTH</th>' +
-									'<th data-range="3m">3 MONTHS</th>' +
-									'<th data-range="1y">1 YEAR</th>' +
-									'<th data-range="5y">5 YEARS</th>' +
-									'<th data-range="all">ALL</th>' +
+									'<th class="chart-range" data-range="5d">5 DAYS</th>' +
+									'<th class="chart-range" data-range="1m">1 MONTH</th>' +
+									'<th class="chart-range" data-range="3m">3 MONTHS</th>' +
+									'<th class="chart-range" data-range="1y">1 YEAR</th>' +
+									'<th class="chart-range" data-range="5y">5 YEARS</th>' +
+									'<th class="chart-range" data-range="all">ALL</th>' +
 								'</tr>' + 
 							'</table>' +
 							'<table id="watchlist">' +
@@ -92,12 +101,94 @@ window.Investments = {
 		this.fetchQuotes();
 	},
 
+	bindListeners: function() {
+		var that = this;
+		_.each($('.chart-range'), function(range) {
+			$(range).on('click', _.bind(that.loadChart, that));
+		});
+	},
+
+	loadChart: function(event) {
+		// toggle Tab
+		var $target = $(event.target);
+		this.toggleTab($target);
+		// call api for data points
+		this.fetchPlotData($target);
+		// re-plot chart
+	},
+
+	toggleTab: function($target) {
+		if($target.hasClass('selected')) {
+			return false;
+		}
+		$target.siblings().removeClass('selected');
+		$target.addClass('selected');
+	},
+
+	fetchPlotData: function($target) {
+		var url = this.chartAPI + 'TSLA' + this.chartQuote + $target.data('range') + '/json';
+		$.ajax({
+	    type: 'GET',
+	    dataType: 'jsonp',
+	    url: url,
+	    context: this,
+	    success: function(data) {
+	    	this.plotChart(data);
+	    }
+	  });
+	},
+
+	plotChart: function(data) {
+		var dataset = [{'date': '101', 'price': '20'},
+										{'date': '102', 'price': '50'},
+										{'date': '103', 'price': '20'},
+										{'date': '104', 'price': '150'},
+										{'date': '105', 'price': '300'},
+										{'date': '106', 'price': '400'}];
+		var xRange = d3.scale.linear().range([0, 900]).domain([d3.min(dataset, function(d) { return d.date; }), d3.max(dataset, function(d) { return d.date; })]);
+		var yRange = d3.scale.linear().range([500, 0]).domain([d3.min(dataset, function(d) { return d.price; }), d3.max(dataset, function(d) { return d.price; })]);
+		
+		var xAxis = d3.svg.axis().scale(xRange).tickSize(5).tickSubdivide(true);
+		var yAxis = d3.svg.axis().scale(yRange).tickSize(5).orient('left').tickSubdivide(true);
+		var vis = d3.select('#chart');
+		// vis.append('svg');
+		vis.append('svg:g').attr('class', 'x axis').attr('transform', 'translate(50,900)').call(xAxis);
+		vis.append('svg:g').attr('class', 'y axis').attr('transform', 'translate(50,0)').call(yAxis);
+		var lineFunc = d3.svg.line().x(function(d) { return xRange(d.date); }).y(function(d) { return yRange(d.price); });
+
+		vis.append('svg:path').attr('d', lineFunc(dataset)).attr('stroke', '#000').attr('stroke-width', 2).attr('fill', 'none');
+		// var x = d3.scale.linear().range([0, 900]);
+		// var y = d3.scale.linear().range([500, 0]);
+		// var parseDate = d3.time.format("%Y%m%d").parse;
+		// var dataset = [{'date': '20150601', 'price': '20'},
+		// 								{'date': '20150602', 'price': '50'},
+		// 								{'date': '20150603', 'price': '20'},
+		// 								{'date': '20150604', 'price': '150'},
+		// 								{'date': '20150605', 'price': '300'},
+		// 								{'date': '20150606', 'price': '400'}];
+		// var line = d3.svg.line().x(function(d){ return x(d.date); }).y(function(d) { return y(d.price) });
+
+		// var svg = d3.select('#chart')
+		// 						.append('svg')
+		// 						.attr('width', 900)
+		// 						.attr('height', 500);
+		// x.domain(d3.extent(dataset, function(d) { return d.date }));
+		// y.domain(d3.extent(dataset, function(d) { return d.price }));
+		// svg.append('path')
+		// 	 .attr('d', line(dataset))
+		// 	 .attr('stroke', '#21CE99')
+		// 	 .attr('stroke-width', 11)
+		// 	 .attr('fill', 'none');
+
+
+	},
+
 	setBackgroundColor: function() {
 		var date = new Date(Date.now());
 		var hour = date.getHours().toString();
 		var minutes = date.getMinutes().toString();
 		var timeOfDay = parseInt(hour.concat(minutes));
-		debugger
+		// something bad happening over here with the time
 		if(timeOfDay > 1300 || timeOfDay < 630) {
 			$('.market-value').css('color', '#FFF');
 			$('.symbol').css('color', '#FFF');
@@ -186,6 +277,7 @@ window.Investments = {
 			dayPLClass: dayPLClass
 		}));
 		this.setBackgroundColor();
+		this.bindListeners();
 	},
 	setSidebarColor: function(dayPLClass) {
 		var color = dayPLClass == 'positive' ? '#21CE99' : '#F9523A'
