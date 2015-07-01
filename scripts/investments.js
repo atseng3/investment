@@ -63,15 +63,15 @@ window.Investments = {
 							'<div class="day-gain <%= dayPLClass %>"><%= dayPL %> (<%= dayPercent %>%) <span class="day-gain__span">TODAY</span></div>' +
 
 							'<table id="chart-list">' + 
-								'<svg id="chart" width="900" height="500"></svg>' +
+								'<svg id="chart" width="1000" height="500"></svg>' +
 								'<tr class="<%= dayPLClass %>">' + 
-									'<th class="chart-range selected" data-range="1d">1 DAY</th>' +
-									'<th class="chart-range" data-range="5d">5 DAYS</th>' +
-									'<th class="chart-range" data-range="1m">1 MONTH</th>' +
-									'<th class="chart-range" data-range="3m">3 MONTHS</th>' +
-									'<th class="chart-range" data-range="1y">1 YEAR</th>' +
-									'<th class="chart-range" data-range="5y">5 YEARS</th>' +
-									'<th class="chart-range" data-range="all">ALL</th>' +
+									'<th class="chart-range selected" data-range="1d" data-text="TODAY">1 DAY</th>' +
+									'<th class="chart-range" data-range="1m" data-text="PAST MONTH">1 MONTH</th>' +
+									'<th class="chart-range" data-range="3m" data-text="PAST 3 MONTHS">3 MONTHS</th>' +
+									'<th class="chart-range" data-range="1y" data-text="PAST YEAR">1 YEAR</th>' +
+									'<th class="chart-range" data-range="2y" data-text="PAST 2 YEARS">2 YEARS</th>' +
+									'<th class="chart-range" data-range="5y" data-text="PAST 5 YEARS">5 YEARS</th>' +
+									'<th class="chart-range" data-range="all" data-text="ALL">ALL</th>' +
 								'</tr>' + 
 							'</table>' +
 							'<table id="watchlist">' +
@@ -106,6 +106,7 @@ window.Investments = {
 		_.each($('.chart-range'), function(range) {
 			$(range).on('click', _.bind(that.loadChart, that));
 		});
+		$('.chart-range.selected').click();
 	},
 
 	loadChart: function(event) {
@@ -126,61 +127,109 @@ window.Investments = {
 	},
 
 	fetchPlotData: function($target) {
-		var url = this.chartAPI + 'TSLA' + this.chartQuote + $target.data('range') + '/json';
+		var range = $target.data('range');
+		var url = this.chartAPI + 'TSLA' + this.chartQuote + range + '/json';
 		$.ajax({
 	    type: 'GET',
 	    dataType: 'jsonp',
 	    url: url,
 	    context: this,
 	    success: function(data) {
-	    	this.plotChart(data);
+	    	if(range == '1d') {
+	    		var startPrice = data.meta.previous_close;
+	    	} else {
+	    		var startPrice = data.series[0].close;
+	    	}
+	    	var endPrice = data.series[data.series.length-1].close,
+	    		priceDiff = (endPrice - startPrice).toFixed(2),
+	    		percentageDiff = ((endPrice / startPrice - 1) * 100).toFixed(2),
+	    		dayPLClass = priceDiff >= 0 ? 'positive' : 'negative';
+	    	$('div.day-gain').html(priceDiff + ' (' + percentageDiff + '%) <span class="day-gain__span">'+$target.data('text')+'</span>').removeClass().addClass('day-gain ' + dayPLClass);
+	    	$('#chart-list tr').removeClass().addClass(dayPLClass);
+	    	this.plotChart(data, dayPLClass, range);
 	    }
 	  });
 	},
 
-	plotChart: function(data) {
-		var dataset = [{'date': '101', 'price': '20'},
-										{'date': '102', 'price': '50'},
-										{'date': '103', 'price': '20'},
-										{'date': '104', 'price': '150'},
-										{'date': '105', 'price': '300'},
-										{'date': '106', 'price': '400'}];
-		var xRange = d3.scale.linear().range([0, 900]).domain([d3.min(dataset, function(d) { return d.date; }), d3.max(dataset, function(d) { return d.date; })]);
-		var yRange = d3.scale.linear().range([500, 0]).domain([d3.min(dataset, function(d) { return d.price; }), d3.max(dataset, function(d) { return d.price; })]);
+	plotChart: function(data, PLClass, range) {
+		var parseDate = d3.time.format("%Y%m%d").parse;
+		if(data.Date) {
+			var xAxisMin = parseDate(data.Date.min.toString()),
+				xAxisMax = parseDate(data.Date.max.toString());
+		} else {
+			var xAxisMin = new Date(data.Timestamp.min * 1000),
+				xAxisMax = new Date(data.Timestamp.max * 1000);
+		}
+		if(range == '1d') {
+			var priceMin = Math.min(data.ranges.close.min, data.meta.previous_close);
+		} else {
+			var priceMin = data.ranges.close.min;
+
+		}
+		var	priceMax = data.ranges.close.max;
+		var dataset = data.series;
 		
-		var xAxis = d3.svg.axis().scale(xRange).tickSize(5).tickSubdivide(true);
-		var yAxis = d3.svg.axis().scale(yRange).tickSize(5).orient('left').tickSubdivide(true);
-		var vis = d3.select('#chart');
-		// vis.append('svg');
-		vis.append('svg:g').attr('class', 'x axis').attr('transform', 'translate(50,900)').call(xAxis);
-		vis.append('svg:g').attr('class', 'y axis').attr('transform', 'translate(50,0)').call(yAxis);
-		var lineFunc = d3.svg.line().x(function(d) { return xRange(d.date); }).y(function(d) { return yRange(d.price); });
 
-		vis.append('svg:path').attr('d', lineFunc(dataset)).attr('stroke', '#000').attr('stroke-width', 2).attr('fill', 'none');
-		// var x = d3.scale.linear().range([0, 900]);
-		// var y = d3.scale.linear().range([500, 0]);
-		// var parseDate = d3.time.format("%Y%m%d").parse;
-		// var dataset = [{'date': '20150601', 'price': '20'},
-		// 								{'date': '20150602', 'price': '50'},
-		// 								{'date': '20150603', 'price': '20'},
-		// 								{'date': '20150604', 'price': '150'},
-		// 								{'date': '20150605', 'price': '300'},
-		// 								{'date': '20150606', 'price': '400'}];
-		// var line = d3.svg.line().x(function(d){ return x(d.date); }).y(function(d) { return y(d.price) });
+		var vis = d3.select("#chart");
+		vis.selectAll("*").remove();
+	    var WIDTH = 1000,
+	    HEIGHT = 500,
+	    MARGINS = {
+	        top: 20,
+	        right: 20,
+	        bottom: 20,
+	        left: 50
+	    },
+	    // scaling
+	    xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([xAxisMin, xAxisMax]),
+	    yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([priceMin, priceMax]);
+	    
+	    // axis
+	 //    xAxis = d3.svg.axis()
+		//     .scale(xScale),
+		  
+		// yAxis = d3.svg.axis()
+		//     .scale(yScale);
+		// vis.append("svg:g")
+		//     .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+		//     .call(xAxis);
 
-		// var svg = d3.select('#chart')
-		// 						.append('svg')
-		// 						.attr('width', 900)
-		// 						.attr('height', 500);
-		// x.domain(d3.extent(dataset, function(d) { return d.date }));
-		// y.domain(d3.extent(dataset, function(d) { return d.price }));
-		// svg.append('path')
-		// 	 .attr('d', line(dataset))
-		// 	 .attr('stroke', '#21CE99')
-		// 	 .attr('stroke-width', 11)
-		// 	 .attr('fill', 'none');
+	 //   yAxis = d3.svg.axis()
+		// 	.scale(yScale)
+		// 	.orient("left");
+		// vis.append("svg:g")
+	 //    .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+	 //    .call(yAxis);
 
+	    // line
+	    var lineGen = d3.svg.line()
+		    .x(function(d) {
+		    	if(d.Date) {
+		    		return xScale(parseDate(d.Date.toString()));
+		    	} else {
+		    		return xScale(new Date(d.Timestamp * 1000))
+		    	}
+		    })
+		    .y(function(d) {
+		        return yScale(d.close);
+		    });
+		 var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
+		 vis.append('svg:path')
+		  .attr('d', lineGen(dataset))
+		  .attr('stroke', color)
+		  .attr('stroke-width', 2)
+		  .attr('fill', 'none');
 
+		  if(range == '1d') {
+		  	vis.append("line")
+                         .attr("x1", MARGINS.left)
+                         .attr("y1", yScale(data.meta.previous_close))
+                         .attr("x2", WIDTH)
+                         .attr("y2", yScale(data.meta.previous_close))
+                         .style('stroke-dasharray', ('3, 3'))
+                         .attr("stroke-width", 2)
+                         .attr("stroke", "#ACB0B3");
+		  }
 	},
 
 	setBackgroundColor: function() {

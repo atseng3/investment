@@ -10,6 +10,7 @@
 body {
 	font-family: Helvetica Neue;
 	margin: 0px;
+	min-width: 1250px;
 }
 aside {
 	width: 15%;
@@ -20,8 +21,10 @@ aside {
 	color: #FFF;
 	font-size: 22px;
 	font-weight: 500;
+	min-width: 192px;
 }
 article {
+	overflow: auto; /* for containing elements inside article */
 	color: #ACB0B3; /* GREY */
 	text-align: center;
 	width: 84%;
@@ -46,7 +49,6 @@ th, td {
 }
 
 #chart-list th, td {
-	/*color: #21CE99;*/
 	font-weight: 500;
 }
 
@@ -54,13 +56,18 @@ th, td {
 	cursor: pointer;
 }
 
-.chart-range.selected {
+.positive .chart-range.selected {
 	color: #FFF;
 	border-bottom: 3px solid #21CE99;
 }
 
+.negative .chart-range.selected {
+	color: #FFF;
+	border-bottom: 3px solid #F9523A;
+}
+
 #watchlist th, td {
-	/*color: #21CE99;*/
+
 }
 .labels {
 	color: #ACB0B3;
