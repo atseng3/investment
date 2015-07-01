@@ -39,7 +39,32 @@ window.Investments = {
 		UA: {
 			shares: 1000,
 			cost: 60000
-		}
+		},
+		AAPL: {
+			shares: null,
+			cost: null
+		},
+		GOOG: {
+			shares: null,
+			cost: null
+		},
+		CHGG: {
+			shares: null,
+			cost: null
+		},
+		BABA: {
+			shares: null,
+			cost: null
+		},
+		PANW: {
+			shares: null,
+			cost: null
+		},
+		IBKR: {
+			shares: null,
+			cost: null
+		},
+
 	},
 	// portfolio: {
 	// 	TSLA: {
@@ -128,7 +153,7 @@ window.Investments = {
 
 	fetchPlotData: function($target) {
 		var range = $target.data('range');
-		var url = this.chartAPI + 'TSLA' + this.chartQuote + range + '/json';
+		var url = this.chartAPI + 'MTSI' + this.chartQuote + range + '/json';
 		$.ajax({
 	    type: 'GET',
 	    dataType: 'jsonp',
@@ -274,13 +299,28 @@ window.Investments = {
 			var sorted = {};
 			// for table
 			sorted['Symbol'] = quote.symbol.toUpperCase();
-			sorted['Shares'] = portfolio[sorted['Symbol']].shares;
 			sorted['LastTradePriceOnly'] = quote.LastTradePriceOnly;
 			sorted['PercentChange'] = quote.PercentChange;
-			sorted['todayPL'] = (quote.Change / sorted['LastTradePriceOnly'] * quote.PreviousClose * sorted['Shares']).toFixed(2);
-			sorted['MarketValue'] = parseFloat(sorted['Shares'] * sorted['LastTradePriceOnly']).toFixed(2);
-			sorted['Cost'] = parseInt(portfolio[sorted['Symbol']].cost).toFixed(2);
-			sorted['totalPL'] = that.numberFormat(sorted['MarketValue'] - sorted['Cost'], 2, true);
+			if(portfolio[sorted['Symbol']].shares) {
+				sorted['Shares'] = portfolio[sorted['Symbol']].shares;
+				sorted['todayPL'] = (quote.Change / sorted['LastTradePriceOnly'] * quote.PreviousClose * sorted['Shares']).toFixed(2);
+				sorted['MarketValue'] = parseFloat(sorted['Shares'] * sorted['LastTradePriceOnly']).toFixed(2);
+				sorted['Cost'] = parseInt(portfolio[sorted['Symbol']].cost).toFixed(2);
+				sorted['totalPL'] = that.numberFormat(sorted['MarketValue'] - sorted['Cost'], 2, true);
+			} else {
+				sorted['Shares'] = 0;
+				sorted['todayPL'] = '-';
+				sorted['MarketValue'] = '-';
+				sorted['Cost'] = '-';
+				sorted['totalPL'] = '-';
+			}
+			// sorted['Shares'] = portfolio[sorted['Symbol']].shares;
+			// sorted['LastTradePriceOnly'] = quote.LastTradePriceOnly;
+			// sorted['PercentChange'] = quote.PercentChange;
+			// sorted['todayPL'] = (quote.Change / sorted['LastTradePriceOnly'] * quote.PreviousClose * sorted['Shares']).toFixed(2);
+			// sorted['MarketValue'] = parseFloat(sorted['Shares'] * sorted['LastTradePriceOnly']).toFixed(2);
+			// sorted['Cost'] = parseInt(portfolio[sorted['Symbol']].cost).toFixed(2);
+			// sorted['totalPL'] = that.numberFormat(sorted['MarketValue'] - sorted['Cost'], 2, true);
 			// extra
 			sorted['Change'] = quote.Change;
 			sorted['PreviousClose'] = parseInt(quote.PreviousClose).toFixed(2);
@@ -309,8 +349,10 @@ window.Investments = {
 		var dayPercent = 0;
 		var dayPLClass = 'positive';
 		_.each(this.quotes, function(quote) {
-			portfolioValue += parseFloat(quote.MarketValue);
-			dayPL += parseFloat(quote.todayPL);
+			if(!isNaN(quote.MarketValue)) {
+				portfolioValue += parseFloat(quote.MarketValue);
+				dayPL += parseFloat(quote.todayPL);
+			}
 		});
 		dayPercent = dayPL / (portfolioValue - dayPL) * 100;
 		dayPLClass = dayPL >= 0 ? 'positive' : 'negative';
