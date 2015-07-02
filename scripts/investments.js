@@ -104,14 +104,14 @@ window.Investments = {
 									'<th>Symbol</th>' +
 									'<th>Price</th>' +
 									'<th>% Change</th>' +
-									'<th>Value Change</th>' +
+									'<th>Daily Change</th>' +
 									'<th>Market Value</th>' +
 									'<th>Cost</th>' +
 									'<th>P/L</th>' +
 								'</tr>' +
 								'<% _.each(quotes, function(quote) { %>' +
 									'<tr class="<%= quote.Change >= 0 ? "positive" : "negative" %>">' +
-										'<td class="symbol"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares %> SHARES</span></td>' + 
+										'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
 										'<td>$<%= quote.LastTradePriceOnly %></td>' + 
 										'<td><%= quote.PercentChange %></td>' + 
 										'<td>$<%= quote.todayPL %></td>' + 
@@ -153,7 +153,7 @@ window.Investments = {
 
 	fetchPlotData: function($target) {
 		var range = $target.data('range');
-		var url = this.chartAPI + 'MTSI' + this.chartQuote + range + '/json';
+		var url = this.chartAPI + 'AMBA' + this.chartQuote + range + '/json';
 		$.ajax({
 	    type: 'GET',
 	    dataType: 'jsonp',
@@ -265,12 +265,12 @@ window.Investments = {
 		// something bad happening over here with the time
 		if(timeOfDay > 1300 || timeOfDay < 630) {
 			$('.market-value').css('color', '#FFF');
-			$('.symbol').css('color', '#FFF');
+			$('.symbol.symbol-position').css('color', '#FFF');
 			$('body').css('background-color', '#020A11');
 			console.log('market close');
 		} else {
 			$('.market-value').css('color', '#000');
-			$('.symbol').css('color', '#000');
+			$('.symbol.symbol-position').css('color', '#000');
 			$('body').css('background-color', '#FFF');
 			console.log('market open');
 		}
