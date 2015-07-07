@@ -27,45 +27,45 @@ window.Investments = {
 		fiveyears: {},
 		all: {}
 	},
-	portfolio: {
-		TSLA: {
-			shares: 1000,
-			cost: 150000
-		},
-		AMBA: {
-			shares: 2000,
-			cost: 150000
-		},
-		UA: {
-			shares: 1000,
-			cost: 60000
-		},
-		AAPL: {
-			shares: null,
-			cost: null
-		},
-		GOOG: {
-			shares: null,
-			cost: null
-		},
-		CHGG: {
-			shares: null,
-			cost: null
-		},
-		BABA: {
-			shares: null,
-			cost: null
-		},
-		PANW: {
-			shares: null,
-			cost: null
-		},
-		IBKR: {
-			shares: null,
-			cost: null
-		},
+	// portfolio: {
+	// 	TSLA: {
+	// 		shares: 1000,
+	// 		cost: 150000
+	// 	},
+	// 	AMBA: {
+	// 		shares: 2000,
+	// 		cost: 150000
+	// 	},
+	// 	UA: {
+	// 		shares: 1000,
+	// 		cost: 60000
+	// 	},
+	// 	AAPL: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	GOOG: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	CHGG: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	BABA: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	PANW: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	IBKR: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
 
-	},
+	// },
 	// portfolio: {
 	// 	TSLA: {
 	// 		shares: 608,
@@ -73,11 +73,35 @@ window.Investments = {
 	// 	},
 	// 	AMBA: {
 	// 		shares: 1758,
-	// 		cost: 200000
+	// 		cost: 199988
 	// 	},
 	// 	UA: {
 	// 		shares: 409,
 	// 		cost: 33508
+	// 	},
+	// 	AAPL: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	GOOG: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	CHGG: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	BABA: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	PANW: {
+	// 		shares: null,
+	// 		cost: null
+	// 	},
+	// 	IBKR: {
+	// 		shares: null,
+	// 		cost: null
 	// 	}
 	// },
 	quotes: {
@@ -123,7 +147,80 @@ window.Investments = {
 							'</table>' +
 						 '</div>'),
 	init: function() {
+		this.startParse();
 		this.fetchQuotes();
+	},
+
+	startParse: function() {
+		///////////
+		Parse.initialize("2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b", "6U76pQ4YKLVKy3VOWhKk0V6l0qwhuzeAGQd7ycjf");
+
+		function checkLogin() {
+	      if(Parse.User.current()) {
+	        $('.welcome-text').html('Welcome ' + Parse.User.current().get('username').toUpperCase());
+	        $('.btn-logout').show();
+	        $('#login').hide();
+	        $('#signup').hide();
+	      } else {
+	      	// should redirect or show login/signup page/template
+	        // $('.welcome-text').html('');
+	        // $('.btn-logout').hide();
+	        // $('#login').show();
+	        // $('#signup').show();
+	      }
+	    }
+
+	    checkLogin();
+
+	    // user logout
+
+	    $('.btn-logout').click(function(event) {
+	    	debugger
+	      Parse.User.logOut();
+	      checkLogin();
+	    });
+
+	    // user login
+
+	    $('#login').submit(function(event) {
+	      event.preventDefault();
+
+	      var name = $('#login-name').val();
+	      var password = $('#login-password').val();
+
+	      Parse.User.logIn(name, password, {
+	        success: function(user) {
+	          console.log('log in success!');
+	          checkLogin();
+	        },
+	        error: function(user, error) {
+	          console.log('log in error!');
+	        }
+	      });
+	    });
+	    
+	    // user signup
+
+	    $('#signup').submit(function(event) {
+	      event.preventDefault();
+
+	      var name = $('#signup-name').val();
+	      var password = $('#signup-password').val();
+	      var user = new Parse.User();
+	      user.set('username', name);
+	      user.set('password', password);
+
+	      user.signUp(null, {
+	        success: function(user) {
+	          // do something with the user object
+	          checkLogin();
+	        },
+	        error: function(user, error) {
+	          console.log('signup error' + error.message);
+	        }
+	      });
+	    });
+		///////////
 	},
 
 	bindListeners: function() {
@@ -131,7 +228,7 @@ window.Investments = {
 		_.each($('.chart-range'), function(range) {
 			$(range).on('click', _.bind(that.loadChart, that));
 		});
-		$('.chart-range.selected').click();
+		// $('.chart-range.selected').click();
 	},
 
 	loadChart: function(event) {
@@ -277,10 +374,28 @@ window.Investments = {
 	},
 	fetchQuotes: function() {
 		var url = this.yahooYQL + this.quoteURL;
-		var symbols = Object.keys(this.portfolio);
-		url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-		// if(this.quotes.length == undefined) {
-			var that = this;
+		var that = this;
+		var Portfolio = Parse.Object.extend('Portfolio');
+		var query = new Parse.Query(Portfolio);
+		query.find({
+			success: function() {
+
+			},
+			error: function(error) {
+
+			}
+		}).then(function(quotes) {
+			var symbols = [];
+			var portfolio = {};
+			_.each(quotes, function(quote) {
+				portfolio[quote.get('symbol')] = {
+					shares: quote.get('shares'),
+					cost: quote.get('cost')
+				};
+			});
+			that.portfolio = portfolio;
+			symbols = Object.keys(portfolio);
+			url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 			$.ajax({
 		    type: 'GET',
 		    url: url,
@@ -288,7 +403,20 @@ window.Investments = {
 		    	that.quotes = that.massageData(data.query.results.quote);
 		    	that.render();
 		    }});
-		// }
+		});
+
+		// var symbols = Object.keys(this.portfolio);
+		// url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+		// if(this.quotes.length == undefined) {
+		// 	var that = this;
+		// 	$.ajax({
+		//     type: 'GET',
+		//     url: url,
+		//     success: function(data) {
+		//     	that.quotes = that.massageData(data.query.results.quote);
+		//     	that.render();
+		//     }});
+		// // }
 		return;
 	},
 	massageData: function(quotes) {
