@@ -23,6 +23,7 @@ aside {
 	font-size: 22px;
 	font-weight: 500;
 	min-width: 192px;
+	padding: 40px 0px;
 }
 article {
 	overflow: auto; /* for containing elements inside article */

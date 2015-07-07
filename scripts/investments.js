@@ -250,7 +250,7 @@ window.Investments = {
 
 	fetchPlotData: function($target) {
 		var range = $target.data('range');
-		var url = this.chartAPI + 'AMBA' + this.chartQuote + range + '/json';
+		var url = this.chartAPI + 'TSLA' + this.chartQuote + range + '/json';
 		$.ajax({
 	    type: 'GET',
 	    dataType: 'jsonp',
@@ -377,6 +377,8 @@ window.Investments = {
 		var that = this;
 		var Portfolio = Parse.Object.extend('Portfolio');
 		var query = new Parse.Query(Portfolio);
+		query.descending('shares');
+		query.addAscending('symbol');
 		query.find({
 			success: function() {
 
