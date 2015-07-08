@@ -503,6 +503,7 @@ window.Investments = {
 	setSidebarColor: function(dayPLClass) {
 		var color = dayPLClass == 'positive' ? '#21CE99' : '#F9523A'
 		$('.logo').css('border', '3px solid ' + color);
+		$('.logo').css('color', color);
 		$('.btn-logout').css('background', color)
 	}
 };
