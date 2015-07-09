@@ -1,12 +1,12 @@
 'use strict';
 
-// "1d",
-// "1m",
-// "3m",
-// "6m",
-// "1y",
-// "2y",
-// "5y"
+// "1d", interval: min
+// "1m", interval: day
+// "3m", interval: day
+// "6m", interval: day
+// "1y", interval: day
+// "2y", interval: day
+// "5y" interval: week -> new Date().getDay == 1
 
 // http://chartapi.finance.yahoo.com/instrument/1.0/TSLA/chartdata;type=quote;range=1m/json
 
@@ -228,7 +228,7 @@ window.Investments = {
 		_.each($('.chart-range'), function(range) {
 			$(range).on('click', _.bind(that.loadChart, that));
 		});
-		// $('.chart-range.selected').click();
+		$('.chart-range.selected').click();
 	},
 
 	loadChart: function(event) {
@@ -236,7 +236,7 @@ window.Investments = {
 		var $target = $(event.target);
 		this.toggleTab($target);
 		// call api for data points
-		this.fetchPlotData($target);
+		this.fetchUserPlotData($target);
 		// re-plot chart
 	},
 
@@ -246,6 +246,20 @@ window.Investments = {
 		}
 		$target.siblings().removeClass('selected');
 		$target.addClass('selected');
+	},
+
+	fetchUserPlotData: function($target) {
+		var range = $target.data('range');
+		var UserPortfolios = Parse.Object.extend('UserPortfolios');
+		var query = new Parse.Query(UserPortfolios);
+		query.find({
+			success: function(data) {
+				debugger
+			},
+			error: function(error) {
+				debugger
+			}
+		});
 	},
 
 	fetchPlotData: function($target) {
@@ -387,6 +401,7 @@ window.Investments = {
 
 			}
 		}).then(function(quotes) {
+			// debugger
 			var symbols = [];
 			var portfolio = {};
 			_.each(quotes, function(quote) {

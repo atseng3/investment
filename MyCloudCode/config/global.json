@@ -1,0 +1,17 @@
+{
+  "global": {
+    "parseVersion": "1.4.2"
+  },
+  "applications": {
+    "MyCloudCode": {
+      "link": "StockFinance"
+    },
+    "StockFinance": {
+      "applicationId": "2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b",
+      "masterKey": "wlX7d5usOAvsoJSK5mvui5G2XwDeCIE2zopVAiOs"
+    },
+    "_default": {
+      "link": "StockFinance"
+    }
+  }
+}
