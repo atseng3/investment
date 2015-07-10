@@ -249,17 +249,126 @@ window.Investments = {
 	},
 
 	fetchUserPlotData: function($target) {
+		var that = this;
 		var range = $target.data('range');
 		var UserPortfolios = Parse.Object.extend('UserPortfolios');
 		var query = new Parse.Query(UserPortfolios);
+		query.equalTo('user', Parse.User.current());
+
 		query.find({
 			success: function(data) {
-				debugger
+				var portfolioValue = {
+					ranges: {
+						close: {
+							min: null,
+							max: null
+						}
+					},
+					series: []
+				};
+				for(var i = 0; i < 30; i++) {
+					debugger
+					// portfolioValue.series.push({ Date: , close: });
+				}
+				_.each(data, function(userPortfolio) {
+					portfolioValue.ranges.close.min = null;
+					portfolioValue.ranges.close.max = null;
+					portfolioValue.push({ 'Date': userPortfolio.get('date'), 'close': userPortfolio.get('marketValue') });
+					// portfolioValue.push(userPortfolio.get('marketValue'));
+				});
+				// hardcode 1m range for now
+				range = '1m';
+
+				that.plotUserMarketValueChart(portfolioValue, range);
 			},
 			error: function(error) {
 				debugger
 			}
 		});
+	},
+
+	plotUserMarketValueChart: function(data, range) {
+
+		// set x axis min and max
+		// date min and date max
+		// today
+		var xAxisMin = new Date();
+		// one month ago today
+		var xAxisMax = new Date();
+		xAxisMax.setMonth(today.getMonth()-1);
+
+
+		// set y axis min and max
+		// price min and price max
+		var priceMin = data.ranges.close.min;
+		var priceMax = date.ranges.close.max;
+
+		// set dataset
+		var dataset = data.series;
+
+
+
+		var parseDate = d3.time.format("%Y%m%d").parse;
+		if(data.Date) {
+			var xAxisMin = parseDate(data.Date.min.toString()),
+				xAxisMax = parseDate(data.Date.max.toString());
+		} else {
+			var xAxisMin = new Date(data.Timestamp.min * 1000),
+				xAxisMax = new Date(data.Timestamp.max * 1000);
+		}
+		if(range == '1d') {
+			var priceMin = Math.min(data.ranges.close.min, data.meta.previous_close);
+		} else {
+			var priceMin = data.ranges.close.min;
+
+		}
+		var	priceMax = data.ranges.close.max;
+		var dataset = data.series;
+		
+
+		var vis = d3.select("#chart");
+		vis.selectAll("*").remove();
+	    var WIDTH = 1000,
+	    HEIGHT = 500,
+	    MARGINS = {
+	        top: 20,
+	        right: 20,
+	        bottom: 20,
+	        left: 50
+	    },
+	    // scaling
+	    xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([xAxisMin, xAxisMax]),
+	    yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([priceMin, priceMax]);
+
+	    // line
+	    var lineGen = d3.svg.line()
+		    .x(function(d) {
+		    	if(d.Date) {
+		    		return xScale(parseDate(d.Date.toString()));
+		    	} else {
+		    		return xScale(new Date(d.Timestamp * 1000))
+		    	}
+		    })
+		    .y(function(d) {
+		        return yScale(d.close);
+		    });
+		 var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
+		 vis.append('svg:path')
+		  .attr('d', lineGen(dataset))
+		  .attr('stroke', color)
+		  .attr('stroke-width', 2)
+		  .attr('fill', 'none');
+
+		  if(range == '1d') {
+		  	vis.append("line")
+                         .attr("x1", MARGINS.left)
+                         .attr("y1", yScale(data.meta.previous_close))
+                         .attr("x2", WIDTH)
+                         .attr("y2", yScale(data.meta.previous_close))
+                         .style('stroke-dasharray', ('3, 3'))
+                         .attr("stroke-width", 2)
+                         .attr("stroke", "#ACB0B3");
+		  }
 	},
 
 	fetchPlotData: function($target) {
