@@ -1,11 +1,11 @@
 'use strict';
 
-// "1d", interval: min
-// "1m", interval: day
-// "3m", interval: day
-// "6m", interval: day
-// "1y", interval: day
-// "2y", interval: day
+// "1d", interval: min 
+// "1m", interval: day 30days 22workdays
+// "3m", interval: day 90days 66workdays
+// "6m", interval: day 
+// "1y", interval: day 262days 
+// "2y", interval: day 524days
 // "5y" interval: week -> new Date().getDay == 1
 
 // http://chartapi.finance.yahoo.com/instrument/1.0/TSLA/chartdata;type=quote;range=1m/json
@@ -115,10 +115,10 @@ window.Investments = {
 								'<svg id="chart" width="1000" height="500"></svg>' +
 								'<tr class="<%= dayPLClass %>">' + 
 									'<th class="chart-range selected" data-range="1d" data-text="TODAY">1 DAY</th>' +
-									'<th class="chart-range" data-range="1m" data-text="PAST MONTH">1 MONTH</th>' +
-									'<th class="chart-range" data-range="3m" data-text="PAST 3 MONTHS">3 MONTHS</th>' +
-									'<th class="chart-range" data-range="1y" data-text="PAST YEAR">1 YEAR</th>' +
-									'<th class="chart-range" data-range="2y" data-text="PAST 2 YEARS">2 YEARS</th>' +
+									'<th class="chart-range" data-range="1m" data-text="PAST MONTH" data-workdays="22">1 MONTH</th>' +
+									'<th class="chart-range" data-range="3m" data-text="PAST 3 MONTHS" data-workdays="66">3 MONTHS</th>' +
+									'<th class="chart-range" data-range="1y" data-text="PAST YEAR" data-workdays="262">1 YEAR</th>' +
+									'<th class="chart-range" data-range="2y" data-text="PAST 2 YEARS"  data-workdays="524">2 YEARS</th>' +
 									'<th class="chart-range" data-range="5y" data-text="PAST 5 YEARS">5 YEARS</th>' +
 									'<th class="chart-range" data-range="all" data-text="ALL">ALL</th>' +
 								'</tr>' + 
@@ -236,7 +236,11 @@ window.Investments = {
 		var $target = $(event.target);
 		this.toggleTab($target);
 		// call api for data points
-		this.fetchUserPlotData($target);
+		if($target.data('range') == '1d') {
+			this.fetchUserPlotData($target);
+		} else {
+			this.fetchUserHistoryPlotData($target);
+		}
 		// re-plot chart
 	},
 
@@ -248,36 +252,58 @@ window.Investments = {
 		$target.addClass('selected');
 	},
 
-	fetchUserPlotData: function($target) {
+	fetchUserHistoryPlotData: function($target) {
 		var that = this;
-		var range = $target.data('range');
+		var workdays = $target.data('workdays');
 		var UserPortfolios = Parse.Object.extend('UserPortfolios');
 		var query = new Parse.Query(UserPortfolios);
 		query.equalTo('user', Parse.User.current());
+		query.ascending('marketValue');
 
 		query.find({
 			success: function(data) {
 				var portfolioValue = {
 					ranges: {
 						close: {
+							min: data[0].get('marketValue'),
+							max: data[data.length-1].get('marketValue')
+						},
+						dates: {
 							min: null,
 							max: null
 						}
 					},
 					series: []
 				};
-				for(var i = 0; i < 30; i++) {
-					debugger
-					// portfolioValue.series.push({ Date: , close: });
-				}
-				_.each(data, function(userPortfolio) {
-					portfolioValue.ranges.close.min = null;
-					portfolioValue.ranges.close.max = null;
-					portfolioValue.push({ 'Date': userPortfolio.get('date'), 'close': userPortfolio.get('marketValue') });
-					// portfolioValue.push(userPortfolio.get('marketValue'));
+
+				var allAvailableDates = [];
+				var temp = {};
+				_.each(data, function(entry) {
+					temp[moment(entry.get('date')).format('YYYYMMDD')] = entry.get('marketValue');
+					allAvailableDates.push(moment(entry.get('date')));
 				});
+
+				portfolioValue.ranges.dates.max = moment.max(allAvailableDates).format('YYYYMMDD');
+
+				var days = workdays;
+				var date = moment();
+				while (days > 0) {
+					if(date.isoWeekday() !== 6 && date.isoWeekday() !== 7) {
+						days -= 1;
+						var formattedDate = date.format('YYYYMMDD');
+						if(temp[formattedDate]) {
+							portfolioValue.series.push({ Date: formattedDate, close: temp[formattedDate]});
+						} else {
+							var lastAvailableDate = moment.min(allAvailableDates);
+							portfolioValue.series.push({ Date: date.format('YYYYMMDD'), close: temp[lastAvailableDate.format('YYYYMMDD')]});
+						}
+					}
+					date = date.subtract(1, 'days');
+				}
+				portfolioValue.ranges.dates.min = formattedDate;
+
 				// hardcode 1m range for now
-				range = '1m';
+				var range = '1m';
 
 				that.plotUserMarketValueChart(portfolioValue, range);
 			},
@@ -288,43 +314,21 @@ window.Investments = {
 	},
 
 	plotUserMarketValueChart: function(data, range) {
-
+		var parseDate = d3.time.format("%Y%m%d").parse;
 		// set x axis min and max
-		// date min and date max
-		// today
-		var xAxisMin = new Date();
+		var xAxisMin = parseDate(data.ranges.dates.min);
 		// one month ago today
-		var xAxisMax = new Date();
-		xAxisMax.setMonth(today.getMonth()-1);
+		var xAxisMax = parseDate(data.ranges.dates.max);
+		// xAxisMax.setMonth(today.getMonth()-1);
 
 
 		// set y axis min and max
 		// price min and price max
-		var priceMin = data.ranges.close.min;
-		var priceMax = date.ranges.close.max;
+		var marketValueMin = data.ranges.close.min;
+		var marketValueMax = data.ranges.close.max;
 
 		// set dataset
 		var dataset = data.series;
-
-
-
-		var parseDate = d3.time.format("%Y%m%d").parse;
-		if(data.Date) {
-			var xAxisMin = parseDate(data.Date.min.toString()),
-				xAxisMax = parseDate(data.Date.max.toString());
-		} else {
-			var xAxisMin = new Date(data.Timestamp.min * 1000),
-				xAxisMax = new Date(data.Timestamp.max * 1000);
-		}
-		if(range == '1d') {
-			var priceMin = Math.min(data.ranges.close.min, data.meta.previous_close);
-		} else {
-			var priceMin = data.ranges.close.min;
-
-		}
-		var	priceMax = data.ranges.close.max;
-		var dataset = data.series;
-		
 
 		var vis = d3.select("#chart");
 		vis.selectAll("*").remove();
@@ -338,20 +342,21 @@ window.Investments = {
 	    },
 	    // scaling
 	    xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([xAxisMin, xAxisMax]),
-	    yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([priceMin, priceMax]);
-
+	    yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([marketValueMin, marketValueMax]);
 	    // line
 	    var lineGen = d3.svg.line()
 		    .x(function(d) {
-		    	if(d.Date) {
-		    		return xScale(parseDate(d.Date.toString()));
-		    	} else {
-		    		return xScale(new Date(d.Timestamp * 1000))
-		    	}
+		    	// if(d.Date) {
+		    		return xScale(parseDate(d.Date));
+		    	// } else {
+		    		// return xScale(new Date(d.Timestamp * 1000))
+		    	// }
 		    })
 		    .y(function(d) {
 		        return yScale(d.close);
 		    });
+
+		 var PLClass = 'positive';
 		 var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
 		 vis.append('svg:path')
 		  .attr('d', lineGen(dataset))
@@ -369,6 +374,74 @@ window.Investments = {
                          .attr("stroke-width", 2)
                          .attr("stroke", "#ACB0B3");
 		  }
+	},
+
+	fetchUserPlotData: function($target) {
+		var url = this.chartAPI + 'TSLA' + this.chartQuote + '1d/json';
+		var that = this;
+		// 1758*100+641*260+100*86
+		// debugger
+		var data = [{
+				Timestamp: 1436535059,
+				close: 85.07,
+				high: 85.07,
+				low: 85.07,
+				open: 85.07,
+				volume: 32700
+			},
+			{
+				Timestamp: 1436535091,
+				close: 85.03,
+				high: 85.03,
+				low: 85.03,
+				open: 85.03,
+				volume: 300
+			},
+			{
+				Timestamp: 1436535122,
+				close: 85.25,
+				high: 85.25,
+				low: 85.01,
+				open: 85.01,
+				volume: 1600
+			},
+			{
+				Timestamp: 1436535188,
+				close: 85.02,
+				high: 85.188,
+				low: 85.02,
+				open: 85.02,
+				volume: 2100
+			},
+			{
+				Timestamp: 1436535242,
+				close: 84.8225,
+				high: 85.1,
+				low: 84.81,
+				open: 85.1,
+				volume: 4200
+			}];
+		var dataset = [];
+		var shares = 409;
+		var mapped = _.map(data, function(quote){return {Timestamp: quote.Timestamp, close: quote.close*409}});
+		debugger
+		// _.each(this.portfolio, function(asset)) {
+		// 	if(asset.shares) {
+		// 		$.ajax({
+		// 			type: 'GET',
+		// 			dataType: 'jsonp',
+		// 			url: url,
+		// 			context: that,
+		// 			success: function(data) {
+		// 				dataset.push(that.getMarketValue(data, asset.shares));
+		// 			}
+		// 		});
+		// 	}
+		// }
+	},
+
+	getMarketValue: function() {
+		return 
 	},
 
 	fetchPlotData: function($target) {
@@ -430,7 +503,7 @@ window.Investments = {
 	    yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([priceMin, priceMax]);
 	    
 	    // axis
-	 //    xAxis = d3.svg.axis()
+	 //var    xAxis = d3.svg.axis()
 		//     .scale(xScale),
 		  
 		// yAxis = d3.svg.axis()
