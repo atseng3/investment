@@ -58,3 +58,27 @@ Parse.Cloud.job('calculateMarketValue', function(request, status) {
 		}
 	});
 });
+
+Parse.Cloud.job('clearDailyQuotesTable', function(request, status) {
+	var DailyQuotes = Parse.Object.extend("DailyQuotes");
+	var query = new Parse.Query(DailyQuotes);
+
+	query.find({
+		success: function(entries) {
+			Parse.Object.destroyAll(entries, {
+				success: function(){
+					status.success('clearing table was a success!');
+				},
+				error: function(error) {
+					status.error('creating table was a failure!');
+				}
+			});
+		}
+	});
+});
+
+Parse.Cloud.job('fetchQuotes', function(request, status) {
+	// call yql api to fetch quotes of all owned stocks every minute
+	// insert into daily quotes database
+});
+
