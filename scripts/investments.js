@@ -27,86 +27,6 @@ window.Investments = {
 		fiveyears: {},
 		all: {}
 	},
-	// portfolio: {
-	// 	TSLA: {
-	// 		shares: 1000,
-	// 		cost: 150000
-	// 	},
-	// 	AMBA: {
-	// 		shares: 2000,
-	// 		cost: 150000
-	// 	},
-	// 	UA: {
-	// 		shares: 1000,
-	// 		cost: 60000
-	// 	},
-	// 	AAPL: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	GOOG: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	CHGG: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	BABA: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	PANW: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	IBKR: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-
-	// },
-	// portfolio: {
-	// 	TSLA: {
-	// 		shares: 608,
-	// 		cost: 119287
-	// 	},
-	// 	AMBA: {
-	// 		shares: 1758,
-	// 		cost: 199988
-	// 	},
-	// 	UA: {
-	// 		shares: 409,
-	// 		cost: 33508
-	// 	},
-	// 	AAPL: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	GOOG: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	CHGG: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	BABA: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	PANW: {
-	// 		shares: null,
-	// 		cost: null
-	// 	},
-	// 	IBKR: {
-	// 		shares: null,
-	// 		cost: null
-	// 	}
-	// },
-	quotes: {
-
-	},
 	template: _.template('<div>' +
 							'<div class="market-value"><span class="market-value__sign">$ </span><%= portfolioValue %></div>' +
 							'<div class="day-gain <%= dayPLClass %>"><%= dayPL %> (<%= dayPercent %>%) <span class="day-gain__span">TODAY</span></div>' +
@@ -134,14 +54,14 @@ window.Investments = {
 									'<th>P/L</th>' +
 								'</tr>' +
 								'<% _.each(quotes, function(quote) { %>' +
-									'<tr class="<%= quote.Change >= 0 ? "positive" : "negative" %>">' +
+									'<tr>' +
 										'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
-										'<td>$<%= quote.LastTradePriceOnly %></td>' + 
-										'<td><%= quote.PercentChange %></td>' + 
-										'<td>$<%= quote.todayPL %></td>' + 
-										'<td>$<%= quote.MarketValue %></td>' + 
-										'<td>$<%= quote.Cost %></td>' + 
-										'<td><%= quote.totalPL %></td>' + 
+										'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
+										'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
+										'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.todayPL %></td>' + 
+										'<td class="<%= quote.totalPLClass %>">$<%= quote.MarketValue %></td>' + 
+										'<td class="<%= quote.totalPLClass %>">$<%= quote.Cost %></td>' + 
+										'<td class="<%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 
 									'</tr>' +
 								'<% }) %>' +
 							'</table>' +
@@ -239,11 +159,6 @@ window.Investments = {
 		this.toggleTab($target);
 		// call api for data points
 		this.fetchUserPlotData($target, $target.data('charttype'));
-		// if($target.data('range') == '1d') {
-		// 	this.fetchUserPlotData($target);
-		// } else {
-		// 	this.fetchUserHistoryPlotData($target);
-		// }
 	},
 
 	toggleTab: function($target) {
@@ -256,9 +171,8 @@ window.Investments = {
 			table: 'DailyQuotes',
 			ascending: 'createdAt',
 			callback: function($target, data) {
-				debugger
 				var today = new Date();
-				today.setHours(17);
+				today.setHours(13);
 				today.setMinutes(0);
 				var portfolioValue = {
 					previous_close: data[0].get('marketValue'),
@@ -268,7 +182,7 @@ window.Investments = {
 							max: null
 						},
 						dates: {
-							min: data[0].createdAt,
+							min: data[1].createdAt,
 							max: today
 						}
 					},
@@ -276,6 +190,8 @@ window.Investments = {
 				};
 				var allAvailableDates = [];
 				var allMarketValues = [];
+
+				data.shift();
 				
 				_.each(data, function(quote) {
 					portfolioValue.series.push({ Date: quote.createdAt, close: quote.get('marketValue') });
@@ -294,7 +210,6 @@ window.Investments = {
 			table: 'UserPortfolios',
 			ascending: 'marketValue',
 			callback: function($target, data) {
-				debugger
 				var workdays = $target.data('workdays');
 				var portfolioValue = {
 					previous_close: data[0].get('marketValue'),
@@ -311,8 +226,9 @@ window.Investments = {
 					series: []
 				};
 
-				var allAvailableDates = [];
 				var temp = {};
+				temp[moment().format('YYYYMMDD')] = this.portfolioValue;
+				var allAvailableDates = [moment()];
 				_.each(data, function(entry) {
 					temp[moment(entry.get('date')).format('YYYYMMDD')] = entry.get('marketValue');
 					allAvailableDates.push(moment(entry.get('date')));
@@ -349,7 +265,9 @@ window.Investments = {
 		var DataTable = Parse.Object.extend(parseCallback.table);
 		var query = new Parse.Query(DataTable);
 		query.ascending(parseCallback.ascending);
+		query.limit(1000);
 		query.find({
+			// pass in this and $target for context
 			success: $.proxy(parseCallback.callback, this, $target)
 		});
 	},
@@ -389,8 +307,7 @@ window.Investments = {
 		    .y(function(d) {
 		        return yScale(d.close);
 		    });
-		// var max =  
-		var PLClass = data.ranges.close.max - data.ranges.close.min > 0 ? 'positive' : 'negative';
+		var PLClass = data.series[data.series.length-1].close - data.previous_close > 0 ? 'positive' : 'negative';
 		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
 		vis.append('svg:path')
 		.attr('d', lineGen(dataset))
@@ -584,6 +501,7 @@ window.Investments = {
 		return;
 	},
 	massageData: function(quotes) {
+		debugger
 		var sortedArr = [];
 		var portfolio = this.portfolio;
 		var that = this;
@@ -599,12 +517,14 @@ window.Investments = {
 				sorted['MarketValue'] = parseFloat(sorted['Shares'] * sorted['LastTradePriceOnly']).toFixed(2);
 				sorted['Cost'] = parseInt(portfolio[sorted['Symbol']].cost).toFixed(2);
 				sorted['totalPL'] = that.numberFormat(sorted['MarketValue'] - sorted['Cost'], 2, true);
+				sorted['totalPLClass'] = sorted['MarketValue'] - sorted['Cost'] >= 0 ? 'positive' : 'negative';				
 			} else {
 				sorted['Shares'] = 0;
 				sorted['todayPL'] = '-';
 				sorted['MarketValue'] = '-';
 				sorted['Cost'] = '-';
 				sorted['totalPL'] = '-';
+				sorted['totalPLClass'] = '';
 			}
 			// sorted['Shares'] = portfolio[sorted['Symbol']].shares;
 			// sorted['LastTradePriceOnly'] = quote.LastTradePriceOnly;
@@ -649,7 +569,9 @@ window.Investments = {
 		dayPercent = dayPL / (portfolioValue - dayPL) * 100;
 		dayPLClass = dayPL >= 0 ? 'positive' : 'negative';
 		this.setSidebarColor(dayPLClass);
+		this.portfolioValue = portfolioValue;
 		portfolioValue = this.numberFormat(portfolioValue, 2);
+		
 		portfolioValue = portfolioValue.toString().split('.').join('<span class="market-value__cents">.');
 		portfolioValue += '</span>';
 		$('article').html(this.template({ 
