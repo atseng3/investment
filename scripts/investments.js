@@ -17,16 +17,12 @@ window.Investments = {
 	quoteURL: 'select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(',
 
 	historicalURL: 'select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22YHOO%22%20and%20startDate%20%3D%20%222009-09-11%22%20and%20endDate%20%3D%20%222010-03-10%22&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=',
-	performance: {
-		oneday: {
-		},
-		oneweek: {},
-		onemonth: {},
-		threemonths: {},
-		oneyear: {},
-		fiveyears: {},
-		all: {}
-	},
+
+	portfolioValueToday: 0,
+
+	portfolio: {},
+	quotes: {},
+
 	template: _.template('<div>' +
 							'<div class="market-value"><span class="market-value__sign">$ </span><%= portfolioValue %></div>' +
 							'<div class="day-gain <%= dayPLClass %>"><%= dayPL %> (<%= dayPercent %>%) <span class="day-gain__span">TODAY</span></div>' +
@@ -203,7 +199,8 @@ window.Investments = {
 				portfolioValue.ranges.close.max = allMarketValues[allMarketValues.length-1];
 				portfolioValue.ranges.close.min = allMarketValues[0];
 				var range = '1d';
-				this.plotUserMarketValueChart(portfolioValue, range);
+				var rangeText = $target.data('text');
+				this.plotUserMarketValueChart(portfolioValue, range, rangeText);
 			}
 		},
 		longRangePlot: {
@@ -212,7 +209,7 @@ window.Investments = {
 			callback: function($target, data) {
 				var workdays = $target.data('workdays');
 				var portfolioValue = {
-					previous_close: data[0].get('marketValue'),
+					previous_close: null,
 					ranges: {
 						close: {
 							min: data[0].get('marketValue'),
@@ -227,7 +224,7 @@ window.Investments = {
 				};
 
 				var temp = {};
-				temp[moment().format('YYYYMMDD')] = this.portfolioValue;
+				temp[moment().format('YYYYMMDD')] = this.portfolioValueToday;
 				var allAvailableDates = [moment()];
 				_.each(data, function(entry) {
 					temp[moment(entry.get('date')).format('YYYYMMDD')] = entry.get('marketValue');
@@ -252,10 +249,14 @@ window.Investments = {
 					date = date.subtract(1, 'days');
 				}
 				portfolioValue.ranges.dates.min = formattedDate;
+				portfolioValue.series.reverse();
+				portfolioValue.previous_close = portfolioValue.series[0].close;
 
 				var range = $target.data('range');
 
-				this.plotUserMarketValueChart(portfolioValue, range);
+				var rangeText = $target.data('text');
+
+				this.plotUserMarketValueChart(portfolioValue, range, rangeText);
 			}
 		}
 	},
@@ -272,7 +273,7 @@ window.Investments = {
 		});
 	},
 
-	plotUserMarketValueChart: function(data, range) {
+	plotUserMarketValueChart: function(data, range, rangeText) {
 		var parseDate = d3.time.format("%Y%m%d").parse;
 		var xAxisMin = data.ranges.dates.min;
 		var xAxisMax = data.ranges.dates.max;
@@ -309,6 +310,15 @@ window.Investments = {
 		    });
 		var PLClass = data.series[data.series.length-1].close - data.previous_close > 0 ? 'positive' : 'negative';
 		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
+
+		// set chart legends and PL
+		$('#chart-list tr').removeClass().addClass(PLClass);
+		$('.day-gain').removeClass('negative').removeClass('positive').addClass(PLClass);
+		var PL = data.series[data.series.length-1].close - data.previous_close;
+		var PLPercent = PL / data.previous_close * 100;
+		$('.day-gain').html(this.numberFormat(PL, 2)+' ('+this.numberFormat(PLPercent, 2)+'%) <span class="day-gain__span">'+rangeText+'</span>');
+		$('.day-gain__span').html(rangeText);
+
 		vis.append('svg:path')
 		.attr('d', lineGen(dataset))
 		.attr('stroke', color)
@@ -325,7 +335,10 @@ window.Investments = {
 		             .attr("stroke-width", 2)
 		             .attr("stroke", "#ACB0B3");
 		}
+		// this.render();
 	},
+
+// not used for now: for individual stock plot
 
 	fetchPlotData: function($target) {
 		var range = $target.data('range');
@@ -433,12 +446,14 @@ window.Investments = {
 		  }
 	},
 
+// end of individual stock plot
+
 	setBackgroundColor: function() {
 		var date = new Date(Date.now());
 		var hour = date.getHours().toString();
 		var minutes = date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes();
 		var timeOfDay = parseInt(hour.concat(minutes));
-		// something bad happening over here with the time
+
 		if(timeOfDay > 1300 || timeOfDay < 630) {
 			$('.market-value').css('color', '#FFF');
 			$('.symbol.symbol-position').css('color', '#FFF');
@@ -485,23 +500,9 @@ window.Investments = {
 		    	that.render();
 		    }});
 		});
-
-		// var symbols = Object.keys(this.portfolio);
-		// url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-		// if(this.quotes.length == undefined) {
-		// 	var that = this;
-		// 	$.ajax({
-		//     type: 'GET',
-		//     url: url,
-		//     success: function(data) {
-		//     	that.quotes = that.massageData(data.query.results.quote);
-		//     	that.render();
-		//     }});
-		// // }
 		return;
 	},
 	massageData: function(quotes) {
-		debugger
 		var sortedArr = [];
 		var portfolio = this.portfolio;
 		var that = this;
@@ -526,13 +527,6 @@ window.Investments = {
 				sorted['totalPL'] = '-';
 				sorted['totalPLClass'] = '';
 			}
-			// sorted['Shares'] = portfolio[sorted['Symbol']].shares;
-			// sorted['LastTradePriceOnly'] = quote.LastTradePriceOnly;
-			// sorted['PercentChange'] = quote.PercentChange;
-			// sorted['todayPL'] = (quote.Change / sorted['LastTradePriceOnly'] * quote.PreviousClose * sorted['Shares']).toFixed(2);
-			// sorted['MarketValue'] = parseFloat(sorted['Shares'] * sorted['LastTradePriceOnly']).toFixed(2);
-			// sorted['Cost'] = parseInt(portfolio[sorted['Symbol']].cost).toFixed(2);
-			// sorted['totalPL'] = that.numberFormat(sorted['MarketValue'] - sorted['Cost'], 2, true);
 			// extra
 			sorted['Change'] = quote.Change;
 			sorted['PreviousClose'] = parseInt(quote.PreviousClose).toFixed(2);
@@ -569,7 +563,7 @@ window.Investments = {
 		dayPercent = dayPL / (portfolioValue - dayPL) * 100;
 		dayPLClass = dayPL >= 0 ? 'positive' : 'negative';
 		this.setSidebarColor(dayPLClass);
-		this.portfolioValue = portfolioValue;
+		this.portfolioValueToday = portfolioValue;
 		portfolioValue = this.numberFormat(portfolioValue, 2);
 		
 		portfolioValue = portfolioValue.toString().split('.').join('<span class="market-value__cents">.');
