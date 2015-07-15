@@ -263,6 +263,7 @@ window.Investments = {
 		query.find({
 			success: function(data) {
 				var portfolioValue = {
+					previous_close: data[0].get('marketValue'),
 					ranges: {
 						close: {
 							min: data[0].get('marketValue'),
@@ -302,8 +303,7 @@ window.Investments = {
 				}
 				portfolioValue.ranges.dates.min = formattedDate;
 
-				// hardcode 1m range for now
-				var range = '1m';
+				var range = $target.data('range');
 
 				that.plotUserMarketValueChart(portfolioValue, range);
 			},
@@ -315,16 +315,13 @@ window.Investments = {
 
 	plotUserMarketValueChart: function(data, range) {
 		var parseDate = d3.time.format("%Y%m%d").parse;
-		// set x axis min and max
-		var xAxisMin = parseDate(data.ranges.dates.min);
-		// one month ago today
-		var xAxisMax = parseDate(data.ranges.dates.max);
-		// xAxisMax.setMonth(today.getMonth()-1);
-
+		var xAxisMin = data.ranges.dates.min;
+		var xAxisMax = data.ranges.dates.max;
 
 		// set y axis min and max
 		// price min and price max
-		var marketValueMin = data.ranges.close.min;
+
+		var marketValueMin = Math.min(data.ranges.close.min, data.previous_close);
 		var marketValueMax = data.ranges.close.max;
 
 		// set dataset
@@ -336,7 +333,7 @@ window.Investments = {
 	    HEIGHT = 500,
 	    MARGINS = {
 	        top: 20,
-	        right: 20,
+	        right: 50,
 	        bottom: 20,
 	        left: 50
 	    },
@@ -346,102 +343,82 @@ window.Investments = {
 	    // line
 	    var lineGen = d3.svg.line()
 		    .x(function(d) {
-		    	// if(d.Date) {
-		    		return xScale(parseDate(d.Date));
-		    	// } else {
-		    		// return xScale(new Date(d.Timestamp * 1000))
-		    	// }
+	    		return xScale(d.Date);
 		    })
 		    .y(function(d) {
 		        return yScale(d.close);
 		    });
+		// var max =  
+		var PLClass = data.ranges.close.max - data.ranges.close.min > 0 ? 'positive' : 'negative';
+		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
+		vis.append('svg:path')
+		.attr('d', lineGen(dataset))
+		.attr('stroke', color)
+		.attr('stroke-width', 2)
+		.attr('fill', 'none');
 
-		 var PLClass = 'positive';
-		 var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
-		 vis.append('svg:path')
-		  .attr('d', lineGen(dataset))
-		  .attr('stroke', color)
-		  .attr('stroke-width', 2)
-		  .attr('fill', 'none');
-
-		  if(range == '1d') {
-		  	vis.append("line")
-                         .attr("x1", MARGINS.left)
-                         .attr("y1", yScale(data.meta.previous_close))
-                         .attr("x2", WIDTH)
-                         .attr("y2", yScale(data.meta.previous_close))
-                         .style('stroke-dasharray', ('3, 3'))
-                         .attr("stroke-width", 2)
-                         .attr("stroke", "#ACB0B3");
-		  }
+		if(range == '1d') {
+			vis.append("line")
+		             .attr("x1", MARGINS.left)
+		             .attr("y1", yScale(data.previous_close))
+		             .attr("x2", WIDTH)
+		             .attr("y2", yScale(data.previous_close))
+		             .style('stroke-dasharray', ('3, 3'))
+		             .attr("stroke-width", 2)
+		             .attr("stroke", "#ACB0B3");
+		}
 	},
 
 	fetchUserPlotData: function($target) {
-		var url = this.chartAPI + 'TSLA' + this.chartQuote + '1d/json';
 		var that = this;
-		// 1758*100+641*260+100*86
-		// debugger
-		var data = [{
-				Timestamp: 1436535059,
-				close: 85.07,
-				high: 85.07,
-				low: 85.07,
-				open: 85.07,
-				volume: 32700
+		var portfolio = this.portfolio;
+		var DailyQuotes = Parse.Object.extend('DailyQuotes');
+		var query = new Parse.Query(DailyQuotes);
+		query.ascending('createdAt');
+		query.find({
+			success: function(data) {
+				var today = new Date();
+				today.setHours(17);
+				today.setMinutes(0);
+				var portfolioValue = {
+					previous_close: data[0].get('marketValue'),
+					ranges: {
+						close: {
+							min: null,
+							max: null
+						},
+						dates: {
+							min: data[0].createdAt,
+							max: today
+						}
+					},
+					series: []
+				};
+				var allAvailableDates = [];
+				var allMarketValues = [];
+				
+				_.each(data, function(quote) {
+					portfolioValue.series.push({ Date: quote.createdAt, close: quote.get('marketValue') });
+					allMarketValues.push(quote.get('marketValue'));
+				});
+
+				allMarketValues.sort();
+
+				portfolioValue.ranges.close.max = allMarketValues[allMarketValues.length-1];
+				portfolioValue.ranges.close.min = allMarketValues[0];
+				var range = '1d';
+				that.plotUserMarketValueChart(portfolioValue, range);
+
+				
 			},
-			{
-				Timestamp: 1436535091,
-				close: 85.03,
-				high: 85.03,
-				low: 85.03,
-				open: 85.03,
-				volume: 300
-			},
-			{
-				Timestamp: 1436535122,
-				close: 85.25,
-				high: 85.25,
-				low: 85.01,
-				open: 85.01,
-				volume: 1600
-			},
-			{
-				Timestamp: 1436535188,
-				close: 85.02,
-				high: 85.188,
-				low: 85.02,
-				open: 85.02,
-				volume: 2100
-			},
-			{
-				Timestamp: 1436535242,
-				close: 84.8225,
-				high: 85.1,
-				low: 84.81,
-				open: 85.1,
-				volume: 4200
-			}];
-		var dataset = [];
-		var shares = 409;
-		var mapped = _.map(data, function(quote){return {Timestamp: quote.Timestamp, close: quote.close*409}});
-		debugger
-		// _.each(this.portfolio, function(asset)) {
-		// 	if(asset.shares) {
-		// 		$.ajax({
-		// 			type: 'GET',
-		// 			dataType: 'jsonp',
-		// 			url: url,
-		// 			context: that,
-		// 			success: function(data) {
-		// 				dataset.push(that.getMarketValue(data, asset.shares));
-		// 			}
-		// 		});
-		// 	}
-		// }
+			error: function(error) {
+
+			}
+		});
 	},
 
 	getMarketValue: function() {
-		return 
+		return ;
 	},
 
 	fetchPlotData: function($target) {
@@ -553,7 +530,7 @@ window.Investments = {
 	setBackgroundColor: function() {
 		var date = new Date(Date.now());
 		var hour = date.getHours().toString();
-		var minutes = date.getMinutes().toString();
+		var minutes = date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes();
 		var timeOfDay = parseInt(hour.concat(minutes));
 		// something bad happening over here with the time
 		if(timeOfDay > 1300 || timeOfDay < 630) {
