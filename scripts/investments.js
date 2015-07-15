@@ -114,13 +114,13 @@ window.Investments = {
 							'<table id="chart-list">' + 
 								'<svg id="chart" width="1000" height="500"></svg>' +
 								'<tr class="<%= dayPLClass %>">' + 
-									'<th class="chart-range selected" data-range="1d" data-text="TODAY">1 DAY</th>' +
-									'<th class="chart-range" data-range="1m" data-text="PAST MONTH" data-workdays="22">1 MONTH</th>' +
-									'<th class="chart-range" data-range="3m" data-text="PAST 3 MONTHS" data-workdays="66">3 MONTHS</th>' +
-									'<th class="chart-range" data-range="1y" data-text="PAST YEAR" data-workdays="262">1 YEAR</th>' +
-									'<th class="chart-range" data-range="2y" data-text="PAST 2 YEARS"  data-workdays="524">2 YEARS</th>' +
-									'<th class="chart-range" data-range="5y" data-text="PAST 5 YEARS">5 YEARS</th>' +
-									'<th class="chart-range" data-range="all" data-text="ALL">ALL</th>' +
+									'<th class="chart-range" data-range="1d" data-charttype="oneDayPlot" data-text="TODAY">1 DAY</th>' +
+									'<th class="chart-range" data-range="1m" data-charttype="longRangePlot" data-text="PAST MONTH" data-workdays="22">1 MONTH</th>' +
+									'<th class="chart-range" data-range="3m" data-charttype="longRangePlot" data-text="PAST 3 MONTHS" data-workdays="66">3 MONTHS</th>' +
+									'<th class="chart-range" data-range="1y" data-charttype="longRangePlot" data-text="PAST YEAR" data-workdays="262">1 YEAR</th>' +
+									'<th class="chart-range" data-range="2y" data-charttype="longRangePlot" data-text="PAST 2 YEARS"  data-workdays="524">2 YEARS</th>' +
+									'<th class="chart-range" data-range="5y" data-charttype="longRangePlot" data-text="PAST 5 YEARS">5 YEARS</th>' +
+									'<th class="chart-range" data-range="all" data-charttype="longRangePlot" data-text="ALL">ALL</th>' +
 								'</tr>' + 
 							'</table>' +
 							'<table id="watchlist">' +
@@ -175,9 +175,8 @@ window.Investments = {
 	    // user logout
 
 	    $('.btn-logout').click(function(event) {
-	    	debugger
-	      Parse.User.logOut();
-	      checkLogin();
+			Parse.User.logOut();
+			checkLogin();
 	    });
 
 	    // user login
@@ -228,40 +227,75 @@ window.Investments = {
 		_.each($('.chart-range'), function(range) {
 			$(range).on('click', _.bind(that.loadChart, that));
 		});
-		$('.chart-range.selected').click();
+		$('th.chart-range[data-range="1d"]').click();
 	},
 
 	loadChart: function(event) {
 		// toggle Tab
 		var $target = $(event.target);
-		this.toggleTab($target);
-		// call api for data points
-		if($target.data('range') == '1d') {
-			this.fetchUserPlotData($target);
-		} else {
-			this.fetchUserHistoryPlotData($target);
-		}
-		// re-plot chart
-	},
-
-	toggleTab: function($target) {
 		if($target.hasClass('selected')) {
 			return false;
 		}
+		this.toggleTab($target);
+		// call api for data points
+		this.fetchUserPlotData($target, $target.data('charttype'));
+		// if($target.data('range') == '1d') {
+		// 	this.fetchUserPlotData($target);
+		// } else {
+		// 	this.fetchUserHistoryPlotData($target);
+		// }
+	},
+
+	toggleTab: function($target) {
 		$target.siblings().removeClass('selected');
 		$target.addClass('selected');
 	},
 
-	fetchUserHistoryPlotData: function($target) {
-		var that = this;
-		var workdays = $target.data('workdays');
-		var UserPortfolios = Parse.Object.extend('UserPortfolios');
-		var query = new Parse.Query(UserPortfolios);
-		query.equalTo('user', Parse.User.current());
-		query.ascending('marketValue');
+	parseCallbacks: {
+		oneDayPlot: {
+			table: 'DailyQuotes',
+			ascending: 'createdAt',
+			callback: function($target, data) {
+				debugger
+				var today = new Date();
+				today.setHours(17);
+				today.setMinutes(0);
+				var portfolioValue = {
+					previous_close: data[0].get('marketValue'),
+					ranges: {
+						close: {
+							min: null,
+							max: null
+						},
+						dates: {
+							min: data[0].createdAt,
+							max: today
+						}
+					},
+					series: []
+				};
+				var allAvailableDates = [];
+				var allMarketValues = [];
+				
+				_.each(data, function(quote) {
+					portfolioValue.series.push({ Date: quote.createdAt, close: quote.get('marketValue') });
+					allMarketValues.push(quote.get('marketValue'));
+				});
 
-		query.find({
-			success: function(data) {
+				allMarketValues.sort();
+
+				portfolioValue.ranges.close.max = allMarketValues[allMarketValues.length-1];
+				portfolioValue.ranges.close.min = allMarketValues[0];
+				var range = '1d';
+				this.plotUserMarketValueChart(portfolioValue, range);
+			}
+		},
+		longRangePlot: {
+			table: 'UserPortfolios',
+			ascending: 'marketValue',
+			callback: function($target, data) {
+				debugger
+				var workdays = $target.data('workdays');
 				var portfolioValue = {
 					previous_close: data[0].get('marketValue'),
 					ranges: {
@@ -305,11 +339,18 @@ window.Investments = {
 
 				var range = $target.data('range');
 
-				that.plotUserMarketValueChart(portfolioValue, range);
-			},
-			error: function(error) {
-				debugger
+				this.plotUserMarketValueChart(portfolioValue, range);
 			}
+		}
+	},
+
+	fetchUserPlotData: function($target, chartType) {
+		var parseCallback = this.parseCallbacks[chartType];
+		var DataTable = Parse.Object.extend(parseCallback.table);
+		var query = new Parse.Query(DataTable);
+		query.ascending(parseCallback.ascending);
+		query.find({
+			success: $.proxy(parseCallback.callback, this, $target)
 		});
 	},
 
@@ -367,58 +408,6 @@ window.Investments = {
 		             .attr("stroke-width", 2)
 		             .attr("stroke", "#ACB0B3");
 		}
-	},
-
-	fetchUserPlotData: function($target) {
-		var that = this;
-		var portfolio = this.portfolio;
-		var DailyQuotes = Parse.Object.extend('DailyQuotes');
-		var query = new Parse.Query(DailyQuotes);
-		query.ascending('createdAt');
-		query.find({
-			success: function(data) {
-				var today = new Date();
-				today.setHours(17);
-				today.setMinutes(0);
-				var portfolioValue = {
-					previous_close: data[0].get('marketValue'),
-					ranges: {
-						close: {
-							min: null,
-							max: null
-						},
-						dates: {
-							min: data[0].createdAt,
-							max: today
-						}
-					},
-					series: []
-				};
-				var allAvailableDates = [];
-				var allMarketValues = [];
-				
-				_.each(data, function(quote) {
-					portfolioValue.series.push({ Date: quote.createdAt, close: quote.get('marketValue') });
-					allMarketValues.push(quote.get('marketValue'));
-				});
-
-				allMarketValues.sort();
-
-				portfolioValue.ranges.close.max = allMarketValues[allMarketValues.length-1];
-				portfolioValue.ranges.close.min = allMarketValues[0];
-				var range = '1d';
-				that.plotUserMarketValueChart(portfolioValue, range);
-
-				
-			},
-			error: function(error) {
-
-			}
-		});
-	},
-
-	getMarketValue: function() {
-		return ;
 	},
 
 	fetchPlotData: function($target) {
@@ -560,7 +549,6 @@ window.Investments = {
 
 			}
 		}).then(function(quotes) {
-			// debugger
 			var symbols = [];
 			var portfolio = {};
 			_.each(quotes, function(quote) {
