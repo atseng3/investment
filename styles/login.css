@@ -25,6 +25,18 @@ body {
 	right: 0;
 	bottom: 0;
 	margin: auto;
+	background: url('images/one-day-graph.png') center no-repeat;
+	background-color: rgba(0,0,0,0.7);
+	background-blend-mode: color;
+	transition: all 0.7s ease;
+}
+
+#content:hover {
+	background-color: rgba(0,0,0,0.3);
+}
+
+#content:hover .logo {
+	opacity: 1;
 }
 
 .logo {
@@ -37,6 +49,8 @@ body {
 	height: 150px;
 	border-radius: 150px;
 	border: 8px solid #21CE99; /* GREEN */
+	opacity: 0.3;
+	transition: all 0.7s ease;
 }
 
 form {
@@ -106,6 +120,5 @@ input#login-password {
 
 #signup-link {
 	text-decoration: underline;
+	cursor: pointer;
 }
-
-/*background: url('images/one-day-graph.png') center no-repeat;*/
