@@ -24,6 +24,7 @@ aside {
 	font-weight: 500;
 	min-width: 192px;
 	padding: 40px 0px;
+	box-shadow: inset -4px 0px 8px 0px rgba(0,0,0,0.50);
 }
 article {
 	overflow: auto; /* for containing elements inside article */
@@ -51,7 +52,28 @@ th, td {
 	font-size: 16px;
 }
 
-#chart-list th, td {
+#chart-container {
+	background-image: url('images/sliced-dots.png');
+	background-repeat: repeat;
+	background-size: 38% 38%;
+	
+}
+
+svg#chart.market-closed {
+	background: -webkit-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+	background: -o-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+	background: -moz-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+	background: linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+}
+
+svg#chart.market-open {
+	background: -webkit-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+	background: -o-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+	background: -moz-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+	background: linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
+#chart-lst th, td {
 	font-weight: 500;
 }
 

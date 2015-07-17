@@ -17,13 +17,21 @@
   <body>
   	<div id="content">
   		<div class="logo icon-logo-fat"></div>
-	  	<div>Sign in to AT Investing</div>
+	  	<div class="login-title">Sign in to AT Investing</div>
 	  	<!-- login form -->
-	  	<form id="login">
-			<input id="login-name" type="text" placeholder="username">
-			<input id="login-password" type="password" placeholder="password">
-		</form>
+	  	<form id="login" class="flip">
+  			<input id="login-name" type="text" placeholder="username" autocomplete="off" autofocus>
+  			<input id="login-password" type="password" placeholder="password">
+        <input style="display: none;" type="submit">
+  		</form>
+      <!-- sign up form -->
+      <form id="signup">
+        <input id="signup-name" type="text" placeholder="username" autocomplete="off" autofocus>
+        <input id="signup-password" type="password" placeholder="password">
+        <input style="display: none;" type="submit">
+      </form>
 		<div id="no-account">Don't have an account? <a id="signup-link">Create one now.</a></div>
   	</div>
+  <script src="../scripts/login.js"></script>
   </body>
 </html>

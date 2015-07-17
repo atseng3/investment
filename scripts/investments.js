@@ -26,19 +26,22 @@ window.Investments = {
 	template: _.template('<div>' +
 							'<div class="market-value"><span class="market-value__sign">$ </span><%= portfolioValue %></div>' +
 							'<div class="day-gain <%= dayPLClass %>"><%= dayPL %> (<%= dayPercent %>%) <span class="day-gain__span">TODAY</span></div>' +
+							
+								'<table id="chart-list">' + 
+								'<div id="chart-container" style="width: 1000px;height: 500px;margin: auto;">' +
+									'<svg id="chart" width="1000" height="500"></svg>' +
+									'</div>' +
+									'<tr class="<%= dayPLClass %>">' + 
+										'<th class="chart-range" data-range="1d" data-charttype="oneDayPlot" data-text="TODAY">1 DAY</th>' +
+										'<th class="chart-range" data-range="1m" data-charttype="longRangePlot" data-text="PAST MONTH" data-workdays="22">1 MONTH</th>' +
+										'<th class="chart-range" data-range="3m" data-charttype="longRangePlot" data-text="PAST 3 MONTHS" data-workdays="66">3 MONTHS</th>' +
+										'<th class="chart-range" data-range="1y" data-charttype="longRangePlot" data-text="PAST YEAR" data-workdays="262">1 YEAR</th>' +
+										'<th class="chart-range" data-range="2y" data-charttype="longRangePlot" data-text="PAST 2 YEARS"  data-workdays="524">2 YEARS</th>' +
+										'<th class="chart-range" data-range="5y" data-charttype="longRangePlot" data-text="PAST 5 YEARS">5 YEARS</th>' +
+										'<th class="chart-range" data-range="all" data-charttype="longRangePlot" data-text="ALL">ALL</th>' +
+									'</tr>' + 
+								'</table>' +
 
-							'<table id="chart-list">' + 
-								'<svg id="chart" width="1000" height="500"></svg>' +
-								'<tr class="<%= dayPLClass %>">' + 
-									'<th class="chart-range" data-range="1d" data-charttype="oneDayPlot" data-text="TODAY">1 DAY</th>' +
-									'<th class="chart-range" data-range="1m" data-charttype="longRangePlot" data-text="PAST MONTH" data-workdays="22">1 MONTH</th>' +
-									'<th class="chart-range" data-range="3m" data-charttype="longRangePlot" data-text="PAST 3 MONTHS" data-workdays="66">3 MONTHS</th>' +
-									'<th class="chart-range" data-range="1y" data-charttype="longRangePlot" data-text="PAST YEAR" data-workdays="262">1 YEAR</th>' +
-									'<th class="chart-range" data-range="2y" data-charttype="longRangePlot" data-text="PAST 2 YEARS"  data-workdays="524">2 YEARS</th>' +
-									'<th class="chart-range" data-range="5y" data-charttype="longRangePlot" data-text="PAST 5 YEARS">5 YEARS</th>' +
-									'<th class="chart-range" data-range="all" data-charttype="longRangePlot" data-text="ALL">ALL</th>' +
-								'</tr>' + 
-							'</table>' +
 							'<table id="watchlist">' +
 								'<tr class="labels">' +
 									'<th>Symbol</th>' +
@@ -68,8 +71,11 @@ window.Investments = {
 	},
 
 	startParse: function() {
-		///////////
 		Parse.initialize("2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b", "6U76pQ4YKLVKy3VOWhKk0V6l0qwhuzeAGQd7ycjf");
+
+		if(Parse.User.current()) {
+
+		}
 
 		function checkLogin() {
 	      if(Parse.User.current()) {
@@ -293,9 +299,9 @@ window.Investments = {
 	    HEIGHT = 500,
 	    MARGINS = {
 	        top: 20,
-	        right: 50,
+	        right: 0,
 	        bottom: 20,
-	        left: 50
+	        left: 0
 	    },
 	    // scaling
 	    xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([xAxisMin, xAxisMax]),
@@ -307,7 +313,7 @@ window.Investments = {
 		    })
 		    .y(function(d) {
 		        return yScale(d.close);
-		    });
+		    }).interpolate('basis');
 		var PLClass = data.series[data.series.length-1].close - data.previous_close > 0 ? 'positive' : 'negative';
 		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
 
@@ -331,7 +337,7 @@ window.Investments = {
 		             .attr("y1", yScale(data.previous_close))
 		             .attr("x2", WIDTH)
 		             .attr("y2", yScale(data.previous_close))
-		             .style('stroke-dasharray', ('3, 3'))
+		             .style('stroke-dasharray', ('4,4'))
 		             .attr("stroke-width", 2)
 		             .attr("stroke", "#ACB0B3");
 		}
@@ -459,11 +465,15 @@ window.Investments = {
 			$('.symbol.symbol-position').css('color', '#FFF');
 			$('body').css('background-color', '#020A11');
 			console.log('market close');
+			var element = document.getElementById("chart");
+			element.setAttribute("class", "market-closed");
 		} else {
 			$('.market-value').css('color', '#000');
 			$('.symbol.symbol-position').css('color', '#000');
 			$('body').css('background-color', '#FFF');
 			console.log('market open');
+			var element = document.getElementById("chart");
+			element.setAttribute("class", "market-open");
 		}
 	},
 	fetchQuotes: function() {
