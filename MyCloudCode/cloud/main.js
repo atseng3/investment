@@ -91,7 +91,8 @@ Parse.Cloud.job('fetchQuotes', function(request, status) {
 	var hour = today.getHours().toString();
 	var minute = today.getMinutes() < 10 ? '0'+today.getMinutes() : today.getMinutes();
 	var timeRightNow = hour + minute;
-	if(timeRightNow > 1320) {
+	console.log(timeRightNow);
+	if(timeRightNow > 2020) {
 		status.success('Market is closed~');
 	}
 

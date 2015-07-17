@@ -6,6 +6,23 @@ window.Login = {
 	},
 	bindListeners: function() {
 		var that = this;
+		$('form').hover(function(event) {
+			$('.logo').css('opacity', 1);
+			$('#content').css('background-color', 'rgba(0,0,0,0.1)');
+		}, function(event) {
+			$('.logo').css('opacity', 0.3);
+			$('#content').css('background-color', 'rgba(0,0,0,0.7)');
+		});
+		$('.toggle-form').on('click', function(event) {
+			event.preventDefault();
+			var rotate = 'rotateY(180deg)';
+			if(event.target.id == 'login-link') {
+				rotate = 'rotateY(0deg)';
+			} else if(event.target.id == 'signup-link') {
+				rotate = 'rotateY(180deg)';	
+			}
+			$('.container').css('transform', rotate);
+		});
 	    $('#login').submit(function(event) {
 	      event.preventDefault();
 
@@ -15,7 +32,7 @@ window.Login = {
 	      Parse.User.logIn($name.val(), $password.val(), {
 	        success: function(user) {
 	        	// redirect to signed in homepage
-	        	window.location.href = "/";
+	        	window.location.href = "../index.html";
 	        },
 	        error: function(user, error) {
 	        	$name.val('').removeClass().addClass('shake');
@@ -26,19 +43,26 @@ window.Login = {
 	    $('#signup').submit(function(event) {
 	      event.preventDefault();
 
-	      var name = $('#signup-name').val();
-	      var password = $('#signup-password').val();
+	      var $name = $('#signup-name');
+	      var $password = $('#signup-password');
+	      var $password_confirmation = $('#signup-password-confirm');
+	      if($password.val() !== $password_confirmation.val()) {
+			$password.val('').removeClass().addClass('shake');
+			$password_confirmation.val('').removeClass().addClass('shake');
+			return false;
+	      }
 	      var user = new Parse.User();
-	      user.set('username', name);
-	      user.set('password', password);
+	      user.set('username', $name.val());
+	      user.set('password', $password.val());
 
 	      user.signUp(null, {
 	        success: function(user) {
-				// do something with the user object
-				// that.checkLogin();
+	        	window.location.href = "../index.html";
 	        },
 	        error: function(user, error) {
-				// show errors and try again
+	        	$name.val('').removeClass().addClass('shake');
+				$password.val('').removeClass().addClass('shake');
+				$password_confirmation.val('').removeClass().addClass('shake');
 	        }
 	      });
 	    });

@@ -73,8 +73,8 @@ window.Investments = {
 	startParse: function() {
 		Parse.initialize("2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b", "6U76pQ4YKLVKy3VOWhKk0V6l0qwhuzeAGQd7ycjf");
 
-		if(Parse.User.current()) {
-
+		if(!Parse.User.current()) {
+			window.location.href = './login/index.html';
 		}
 
 		function checkLogin() {
@@ -98,7 +98,8 @@ window.Investments = {
 
 	    $('.btn-logout').click(function(event) {
 			Parse.User.logOut();
-			checkLogin();
+			window.location.href = './login/index.html';
+			// checkLogin();
 	    });
 
 	    // user login
@@ -313,7 +314,10 @@ window.Investments = {
 		    })
 		    .y(function(d) {
 		        return yScale(d.close);
-		    }).interpolate('basis');
+		    });
+		if(range == '1d') {
+			lineGen.interpolate('basis');
+		}
 		var PLClass = data.series[data.series.length-1].close - data.previous_close > 0 ? 'positive' : 'negative';
 		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
 
@@ -340,6 +344,7 @@ window.Investments = {
 		             .style('stroke-dasharray', ('4,4'))
 		             .attr("stroke-width", 2)
 		             .attr("stroke", "#ACB0B3");
+
 		}
 		// this.render();
 	},
