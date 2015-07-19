@@ -7,7 +7,6 @@ Parse.Cloud.job('calculateMarketValue', function(request, status) {
 	var userPortfolio = new UserPortfolios;
 
 	// hard coded portfolioId
-	userPortfolio.set('portfolioId', 1);
 	userPortfolio.set('date', new Date());
 
 	// get portfolio stocks
@@ -18,8 +17,12 @@ Parse.Cloud.job('calculateMarketValue', function(request, status) {
 		success: function(quotes) {
 			var symbols = [];
 			var portfolio = {};
+			var portfolioIdCount = 1;
 			for(var i = 0; i < quotes.length; i++) {
 				var quote = quotes[i];
+				if(quote.get('portfolioId') > portfolioIdCount) {
+					portfolioIdCount = quote.get('portfolioId');
+				}
 				portfolio[quote.get('symbol')] = {
 					shares: quote.get('shares'),
 					cost: quote.get('cost')
@@ -50,6 +53,7 @@ Parse.Cloud.job('calculateMarketValue', function(request, status) {
 	    		marketValue += portfolio[quotes[k].symbol]['shares'] * quotes[k].price;
 	    	}
 	    	marketValue = parseFloat(marketValue.toFixed(2));
+	    	userPortfolio.set('portfolioId', 1);
 	    	userPortfolio.set('marketValue', marketValue);
 	    	userPortfolio.save(null, {
 					success: function(portfolio) {
@@ -64,6 +68,10 @@ Parse.Cloud.job('calculateMarketValue', function(request, status) {
 });
 
 Parse.Cloud.job('clearDailyQuotesTable', function(request, status) {
+	var today = new Date();
+	if(today.getDay() == 0 || today.getDay() == 6) {
+		status.success('Today is not a weekday~');
+	}
 	var DailyQuotes = Parse.Object.extend("DailyQuotes");
 	var query = new Parse.Query(DailyQuotes);
 	query.descending('createdAt');
@@ -88,6 +96,9 @@ Parse.Cloud.job('fetchQuotes', function(request, status) {
 	// call yql api to fetch quotes of all owned stocks every minute
 	// insert into daily quotes database
 	var today = new Date();
+	if(today.getDay() == 0 || today.getDay() == 6) {
+		status.success('Today is not a weekday~');
+	}
 	var hour = today.getHours().toString();
 	var minute = today.getMinutes() < 10 ? '0'+today.getMinutes() : today.getMinutes();
 	var timeRightNow = hour + minute;

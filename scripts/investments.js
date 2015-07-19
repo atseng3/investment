@@ -66,87 +66,24 @@ window.Investments = {
 							'</table>' +
 						 '</div>'),
 	init: function() {
-		this.startParse();
+		Parse.initialize("2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b", "6U76pQ4YKLVKy3VOWhKk0V6l0qwhuzeAGQd7ycjf");
+		this.checkLogin();
 		this.fetchQuotes();
 	},
 
-	startParse: function() {
-		Parse.initialize("2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b", "6U76pQ4YKLVKy3VOWhKk0V6l0qwhuzeAGQd7ycjf");
-
+	checkLogin: function() {
 		if(!Parse.User.current()) {
 			window.location.href = './login/index.html';
 		}
-
-		function checkLogin() {
-	      if(Parse.User.current()) {
-	        $('.welcome-text').html('Welcome ' + Parse.User.current().get('username').toUpperCase());
-	        $('.btn-logout').show();
-	        $('#login').hide();
-	        $('#signup').hide();
-	      } else {
-	      	// should redirect or show login/signup page/template
-	        // $('.welcome-text').html('');
-	        // $('.btn-logout').hide();
-	        // $('#login').show();
-	        // $('#signup').show();
-	      }
-	    }
-
-	    checkLogin();
-
-	    // user logout
-
-	    $('.btn-logout').click(function(event) {
-			Parse.User.logOut();
-			window.location.href = './login/index.html';
-			// checkLogin();
-	    });
-
-	    // user login
-
-	    $('#login').submit(function(event) {
-	      event.preventDefault();
-
-	      var name = $('#login-name').val();
-	      var password = $('#login-password').val();
-
-	      Parse.User.logIn(name, password, {
-	        success: function(user) {
-	          console.log('log in success!');
-	          checkLogin();
-	        },
-	        error: function(user, error) {
-	          console.log('log in error!');
-	        }
-	      });
-	    });
-	    
-	    // user signup
-
-	    $('#signup').submit(function(event) {
-	      event.preventDefault();
-
-	      var name = $('#signup-name').val();
-	      var password = $('#signup-password').val();
-	      var user = new Parse.User();
-	      user.set('username', name);
-	      user.set('password', password);
-
-	      user.signUp(null, {
-	        success: function(user) {
-	          // do something with the user object
-	          checkLogin();
-	        },
-	        error: function(user, error) {
-	          console.log('signup error' + error.message);
-	        }
-	      });
-	    });
-		///////////
+		$('.welcome-text').html('Welcome ' + Parse.User.current().get('username').toUpperCase());
 	},
 
 	bindListeners: function() {
 		var that = this;
+		$('.btn-logout').click(function(event) {
+			Parse.User.logOut();
+			window.location.href = './login/index.html';
+	    });
 		_.each($('.chart-range'), function(range) {
 			$(range).on('click', _.bind(that.loadChart, that));
 		});
@@ -175,8 +112,12 @@ window.Investments = {
 			ascending: 'createdAt',
 			callback: function($target, data) {
 				var today = new Date();
-				today.setHours(13);
-				today.setMinutes(0);
+				if(today.getDay() == 0 || today.getDay() == 6) {
+					today = data[data.length-1].createdAt;
+				} else {
+					today.setHours(13);
+					today.setMinutes(0);
+				}
 				var portfolioValue = {
 					previous_close: data[0].get('marketValue'),
 					ranges: {
@@ -346,7 +287,6 @@ window.Investments = {
 		             .attr("stroke", "#ACB0B3");
 
 		}
-		// this.render();
 	},
 
 // not used for now: for individual stock plot
@@ -460,10 +400,14 @@ window.Investments = {
 // end of individual stock plot
 
 	setBackgroundColor: function() {
-		var date = new Date(Date.now());
-		var hour = date.getHours().toString();
-		var minutes = date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes();
-		var timeOfDay = parseInt(hour.concat(minutes));
+		var date = new Date();
+		if(date.getDay() == 0 || date.getDay() == 6) {
+			var timeOfDay = '000';
+		} else {
+			var hour = date.getHours().toString();
+			var minutes = date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes();
+			var timeOfDay = parseInt(hour.concat(minutes));	
+		}
 
 		if(timeOfDay > 1300 || timeOfDay < 630) {
 			$('.market-value').css('color', '#FFF');
@@ -479,6 +423,7 @@ window.Investments = {
 			console.log('market open');
 			var element = document.getElementById("chart");
 			element.setAttribute("class", "market-open");
+			$('.selected').css('color', '#000');
 		}
 	},
 	fetchQuotes: function() {
