@@ -413,16 +413,20 @@ window.Investments = {
 		}
 
 		if(timeOfDay > 1300 || timeOfDay < 630) {
-			$('body').addClass('market-closed');
+			$('.market-value').css('color', '#FFF');
+			$('.symbol.symbol-position').css('color', '#FFF');
+			$('body').css('background-color', '#020A11');
 			console.log('market close');
 			var element = document.getElementById("chart");
 			element.setAttribute("class", "market-closed");
 		} else {
-			$('body').addClass('market-open');
+			$('.market-value').css('color', '#000');
+			$('.symbol.symbol-position').css('color', '#000');
+			$('body').css('background-color', '#FFF');
 			console.log('market open');
 			var element = document.getElementById("chart");
 			element.setAttribute("class", "market-open");
-			// $('.chart-range.selected').css('color', '#000');
+			// $('.selected').css('color', '#000');
 		}
 	},
 	fetchQuotes: function() {

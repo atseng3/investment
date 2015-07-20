@@ -13,54 +13,6 @@ body {
 	min-width: 1250px;
 	height: 100%;
 }
-
-/* market open/closed color coding */
-
-body.market-open {
-	background-color: #FFF;
-}
-
-body.market-closed {
-	background-color: #020A11;
-}
-
-.market-open .market-value {
-	color: #000;
-}
-
-.market-closed .market-value {
-	color: #FFF;
-}
-
-.market-open .symbol.symbol-position {
-	color: #000;
-}
-
-.market-closed .symbol.symbol-position {
-	color: #FFF;
-}
-
-.market-open .chart-range.selected {
-	color: #000;
-}
-
-.market-closed .chart-range.selected {
-	color: #FFF;
-}
-
-.market-closed svg#chart {
-	background: -webkit-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
-	background: -o-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
-	background: -moz-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
-	background: linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
-}
-
-.market-open svg#chart {
-	background: -webkit-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
-	background: -o-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
-	background: -moz-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
-	background: linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
-}
 aside {
 	width: 15%;
 	height: 100%;
@@ -107,6 +59,20 @@ th, td {
 	
 }
 
+svg#chart.market-closed {
+	background: -webkit-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+	background: -o-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+	background: -moz-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+	background: linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+}
+
+svg#chart.market-open {
+	background: -webkit-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+	background: -o-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+	background: -moz-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+	background: linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
 #chart-lst th, td {
 	font-weight: 500;
 }
@@ -116,10 +82,12 @@ th, td {
 }
 
 .positive .chart-range.selected {
+	color: #FFF;
 	border-bottom: 3px solid #21CE99;
 }
 
 .negative .chart-range.selected {
+	color: #FFF;
 	border-bottom: 3px solid #F9523A;
 }
 
