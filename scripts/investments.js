@@ -451,14 +451,16 @@ window.Investments = {
 			});
 			that.portfolio = portfolio;
 			symbols = Object.keys(portfolio);
-			url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-			$.ajax({
-		    type: 'GET',
-		    url: url,
-		    success: function(data) {
-		    	that.quotes = that.massageData(data.query.results.quote);
-		    	that.render();
-		    }});
+			if(symbols.length > 0) {
+				url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+				$.ajax({
+			    type: 'GET',
+			    url: url,
+			    success: function(data) {
+			    	that.quotes = that.massageData(data.query.results.quote);
+			    	that.render();
+			    }});
+			}
 		});
 		return;
 	},
