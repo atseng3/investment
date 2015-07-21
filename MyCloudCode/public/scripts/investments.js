@@ -413,20 +413,16 @@ window.Investments = {
 		}
 
 		if(timeOfDay > 1300 || timeOfDay < 630) {
-			$('.market-value').css('color', '#FFF');
-			$('.symbol.symbol-position').css('color', '#FFF');
-			$('body').css('background-color', '#020A11');
+			$('body').addClass('market-closed');
 			console.log('market close');
 			var element = document.getElementById("chart");
 			element.setAttribute("class", "market-closed");
 		} else {
-			$('.market-value').css('color', '#000');
-			$('.symbol.symbol-position').css('color', '#000');
-			$('body').css('background-color', '#FFF');
+			$('body').addClass('market-open');
 			console.log('market open');
 			var element = document.getElementById("chart");
 			element.setAttribute("class", "market-open");
-			// $('.selected').css('color', '#000');
+			// $('.chart-range.selected').css('color', '#000');
 		}
 	},
 	fetchQuotes: function() {
@@ -455,14 +451,16 @@ window.Investments = {
 			});
 			that.portfolio = portfolio;
 			symbols = Object.keys(portfolio);
-			url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-			$.ajax({
-		    type: 'GET',
-		    url: url,
-		    success: function(data) {
-		    	that.quotes = that.massageData(data.query.results.quote);
-		    	that.render();
-		    }});
+			if(symbols.length > 0) {
+				url += "%22" + symbols.join("%22%2C%22") + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+				$.ajax({
+			    type: 'GET',
+			    url: url,
+			    success: function(data) {
+			    	that.quotes = that.massageData(data.query.results.quote);
+			    	that.render();
+			    }});
+			}
 		});
 		return;
 	},
