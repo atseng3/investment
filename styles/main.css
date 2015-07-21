@@ -147,9 +147,8 @@ th, td {
 	height: 50px;
 	vertical-align: top;
 	line-height: 50px;
-	/*padding-left: 10px;*/
 	cursor: pointer;
-	transition: all 0.5s;
+	transition: all 0.2s;
 }
 
 .tab:hover {

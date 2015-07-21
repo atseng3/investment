@@ -210,18 +210,33 @@ window.Investments = {
 	},
 
 	fetchUserPlotData: function($target, chartType) {
-		var parseCallback = this.parseCallbacks[chartType];
-		var DataTable = Parse.Object.extend(parseCallback.table);
-		var query = new Parse.Query(DataTable);
-		if(parseCallback.table == 'PortfolioValues') {
-			query.equalTo('user', Parse.User.current());
-		}
-		query.ascending(parseCallback.ascending);
-		query.limit(1000);
-		query.find({
-			// pass in this and $target for context
-			success: $.proxy(parseCallback.callback, this, $target)
-		});
+		var that = this;
+		var UserPortfolios = Parse.Object.extend('UserPortfolios');
+		var query = new Parse.Query(UserPortfolios);
+		query.equalTo('user', Parse.User.current());
+		var parseCallback = that.parseCallbacks[chartType];
+		// assume only 1 portfolio per user right now
+		query.find().then(function(user_portfolio) {
+			var DataTable = Parse.Object.extend(parseCallback.table);
+			var query = new Parse.Query(DataTable);
+			query.equalTo('portfolioId', user_portfolio[0].get('portfolioId'));
+			query.ascending(parseCallback.ascending);
+			query.limit(1000);	
+			return query.find();
+		}).then($.proxy(parseCallback.callback, this, $target));
+
+		// var parseCallback = this.parseCallbacks[chartType];
+		// var DataTable = Parse.Object.extend(parseCallback.table);
+		// var query = new Parse.Query(DataTable);
+		// if(parseCallback.table == 'PortfolioValues') {
+		// 	query.equalTo('user', Parse.User.current());
+		// }
+		// query.ascending(parseCallback.ascending);
+		// query.limit(1000);
+		// query.find({
+		// 	// pass in this and $target for context
+		// 	success: $.proxy(parseCallback.callback, this, $target)
+		// });
 	},
 
 	plotUserMarketValueChart: function(data, range, rangeText) {
