@@ -188,10 +188,10 @@ window.Investments = {
 						days -= 1;
 						var formattedDate = date.format('YYYYMMDD');
 						if(temp[formattedDate]) {
+							var lastAvailableDate = formattedDate;
 							portfolioValue.series.push({ Date: formattedDate, close: temp[formattedDate]});
 						} else {
-							var lastAvailableDate = moment.min(allAvailableDates);
-							portfolioValue.series.push({ Date: date.format('YYYYMMDD'), close: temp[lastAvailableDate.format('YYYYMMDD')]});
+							portfolioValue.series.push({ Date: date.format('YYYYMMDD'), close: temp[lastAvailableDate]});
 						}
 					}
 					date = date.subtract(1, 'days');
