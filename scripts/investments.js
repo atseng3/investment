@@ -132,12 +132,10 @@ window.Investments = {
 			$highlighted_item.addClass('highlighted');
 			$target.val($highlighted_item.data('symbol'));
 			return false;
-		} else if(event.keyCode == 27) {
-			$autocomplete_container.html('');
+		} else if(event.keyCode == 27 || event.keyCode == 13) {
+			$autocomplete_container.html('').hide();
+			$target.val('');
 			console.log('esc');
-			return false;
-		} else if(event.keyCode == 13) {
-			$autocomplete_container.html('');
 			return false;
 		}
 
@@ -150,7 +148,7 @@ window.Investments = {
             var YAHOO = window.YAHOO = {Finance: {SymbolSuggest: {}}};
 
 			YAHOO.Finance.SymbolSuggest.ssCallback = function (data) {
-				$autocomplete_container.html('');
+				$autocomplete_container.html('').hide();
 				var html = '';
 				_.each(data.ResultSet.Result, function(item) {
 					if(item.typeDisp == 'Equity' || item.typeDisp == 'Index' || item.typeDisp == 'ETF') {
@@ -172,12 +170,13 @@ window.Investments = {
 
 	addStock: function(event) {
 		event.preventDefault();
-		$('#add-stock .autocomplete_container').html('');
+		$('#add-stock .autocomplete_container').html('').hide();
 		var that = this;
 		var $symbol = $('input[name="add-stock__symbol"]');
 		var a = _.map(this.quotes, function(quote){return quote.Symbol});
 		if(_.contains(a, $symbol.val())) {
 			console.log('already have this in your portfolio!!');
+			$('input[name="add-stock__symbol"]').val('');
 			return false;
 		}
 		var UserPortfolios = Parse.Object.extend('UserPortfolios');
