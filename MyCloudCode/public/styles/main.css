@@ -21,7 +21,7 @@ body.market-open {
 }
 
 body.market-closed {
-	background-color: #020A11;
+	background-color: #000;
 }
 
 .market-open .market-value {
@@ -32,11 +32,19 @@ body.market-closed {
 	color: #FFF;
 }
 
-.market-open .symbol.symbol-position {
+.market-open td.symbol.symbol-position {
 	color: #000;
 }
 
-.market-closed .symbol.symbol-position {
+.market-closed td.symbol.symbol-position {
+	color: #FFF;
+}
+
+.market-open .chart-range.selected {
+	color: #000;
+}
+
+.market-closed .chart-range.selected {
 	color: #FFF;
 }
 
@@ -88,6 +96,7 @@ table {
 	margin: auto;
 	width: 80%;
 	border-collapse: collapse; 
+	table-layout: fixed;
 }
 tr {
 	height: 65px;
@@ -133,7 +142,7 @@ th, td {
 #watchlist tr {
 	border-bottom: 1px solid #ACB0B3;
 }
-#watchlist td.symbol {
+td.symbol {
 	color: #ACB0B3;
 }
 .num-shares {
@@ -212,4 +221,103 @@ th, td {
 
 .day-gain__span {
 	color: #ACB0B3;
+}
+
+#add-stock {
+	border-bottom: 1px solid #DDD;
+	width: 80%;
+	margin: 20px auto;
+	text-align: left;
+	height: 65px;
+	position: relative;
+}
+
+.market-open input {
+	color: #000;
+}
+
+.market-closed input {
+	color: #FFF;
+}
+
+#add-stock input {
+	border: none;
+	text-align: left;
+	font-size: 25px;
+	height: 100%;
+	background: transparent;
+	font-weight: 700;
+}
+
+#add-stock input:focus {
+	outline: none;
+}
+
+::-webkit-input-placeholder {
+   color: #666;
+   font-family: Helvetica Neue;
+   font-size: 25px;
+   font-weight: 400;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+   color: #666;
+   font-family: Helvetica Neue;
+   font-size: 25px;
+   font-weight: 400;
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+   color: #666;
+   font-family: Helvetica Neue;
+   font-size: 25px;
+   font-weight: 400;
+}
+
+:-ms-input-placeholder {  
+   color: #666;
+   font-family: Helvetica Neue;  
+   font-size: 25px;
+   font-weight: 400;
+}
+
+.autocomplete-container {
+	width: 102%; 
+	background: black; 
+	border: 1px solid #666;
+	position: absolute;
+	top: 100%;
+	left: -1%;
+	margin: auto;
+}
+
+.autocomplete-item-outer.highlighted{
+	background: rgba(255,255,255,0.25);
+}
+
+.autocomplete-item {
+	font-size: 16px;
+	color: #FFF;
+	border-bottom: 1px solid #DDD;
+	height: 35px;
+	line-height: 35px;
+	margin: 0 10px;
+}
+
+.autocomplete-item-outer:last-child .autocomplete-item{
+	border: none;
+}
+
+.autocomplete-item__symbol {
+	display: inline-block;
+	width: 30%;
+}
+
+.autocomplete-item__company {
+	display: inline-block;	
+}
+
+.autocomplete-item__exchDisp {
+	display: inline-block;
+	float: right;
 }

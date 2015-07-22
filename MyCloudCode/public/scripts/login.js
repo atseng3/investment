@@ -50,7 +50,7 @@ window.Login = {
 				Parse.User.logIn($name.val(), $password.val(), {
 					success: function(user) {
 						// redirect to signed in homepage
-						window.location.href = "../index.html";
+						window.location.href = "../";
 					},
 					error: function(user, error) {
 						$name.val('').addClass('shake');
@@ -77,7 +77,7 @@ window.Login = {
 
 				user.signUp(null, {
 					success: function(user) {
-						window.location.href = "../index.html";
+						window.location.href = "../";
 					},
 					error: function(user, error) {
 						$name.val('').addClass('shake');

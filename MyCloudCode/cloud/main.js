@@ -15,13 +15,13 @@ Parse.Cloud.job('clearDailyQuotesTable', function(request, status) {
 			query.descending('createdAt');
 			query.limit(1000);
 
-			promises.push(query.find());
+			promises.push(query.find().then(function(entries) {
+				console.log(entries.length);
+				entries.shift();
+				return Parse.Object.destroyAll(entries);
+			}));
 		}
 		return Parse.Promise.when(promises);
-	}).then(function(entries) {
-		console.log(entries.length);
-		entries.shift();
-		return Parse.Object.destroyAll(entries);
 	}).then(function() {
 		status.success('clearing table was a success!');
 	});
