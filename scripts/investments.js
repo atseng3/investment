@@ -132,11 +132,13 @@ window.Investments = {
 			$highlighted_item.addClass('highlighted');
 			$target.val($highlighted_item.data('symbol'));
 			return false;
-		} else if(event.keyCode == 27 || event.keyCode == 13) {
+		} else if(event.keyCode == 27) {
 			$autocomplete_container.html('').hide();
 			$target.val('');
 			console.log('esc');
 			this.autocompleteIndex = -1;
+			return false;
+		} else if(event.keyCode == 13) {
 			return false;
 		}
 
@@ -171,7 +173,8 @@ window.Investments = {
 
 	addStock: function(event) {
 		event.preventDefault();
-		$('#add-stock .autocomplete_container').html('').hide();
+		this.autocompleteIndex = -1;
+		$('#add-stock .autocomplete-container').html('').hide();
 		var that = this;
 		var $symbol = $('input[name="add-stock__symbol"]');
 		var a = _.map(this.quotes, function(quote){return quote.Symbol});
@@ -180,6 +183,8 @@ window.Investments = {
 			$('input[name="add-stock__symbol"]').val('');
 			return false;
 		}
+		var symbol_val = $symbol.val();
+		$symbol.val('');
 		var UserPortfolios = Parse.Object.extend('UserPortfolios');
 		var query = new Parse.Query(UserPortfolios);
 		query.equalTo('user', Parse.User.current());
@@ -187,7 +192,7 @@ window.Investments = {
 			var Portfolio = Parse.Object.extend('Portfolio');
 			var portfolio_entry = new Portfolio();
 			portfolio_entry.set('portfolioId', user_portfolio[0].get('portfolioId'));
-			portfolio_entry.set('symbol', $symbol.val());
+			portfolio_entry.set('symbol', symbol_val);
 			return portfolio_entry.save();
 		}).then(function(entry) {
 			$('input[name="add-stock__symbol"]').val('');
@@ -514,7 +519,6 @@ window.Investments = {
 
 	setBackgroundColor: function() {
 		var date = new Date();
-		date.setHours(10);
 		if(date.getDay() == 0 || date.getDay() == 6) {
 			var timeOfDay = '000';
 		} else {
