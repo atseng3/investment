@@ -136,6 +136,7 @@ window.Investments = {
 			$autocomplete_container.html('').hide();
 			$target.val('');
 			console.log('esc');
+			this.autocompleteIndex = -1;
 			return false;
 		}
 
@@ -347,9 +348,11 @@ window.Investments = {
 
 		var vis = d3.select("#chart");
 		vis.selectAll("*").remove();
-	    var WIDTH = 1000,
-	    HEIGHT = 500,
-	    MARGINS = {
+		var WIDTH = $('#watchlist').width();
+	    var HEIGHT = WIDTH / 2;
+		$('#chart-container').width(WIDTH).height(HEIGHT);
+		$('#chart').width(WIDTH).height(HEIGHT);
+	    var MARGINS = {
 	        top: 20,
 	        right: 0,
 	        bottom: 20,
@@ -511,7 +514,7 @@ window.Investments = {
 
 	setBackgroundColor: function() {
 		var date = new Date();
-		// date.setHours(10);
+		date.setHours(10);
 		if(date.getDay() == 0 || date.getDay() == 6) {
 			var timeOfDay = '000';
 		} else {

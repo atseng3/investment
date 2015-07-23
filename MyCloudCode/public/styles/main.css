@@ -81,6 +81,7 @@ aside {
 	min-width: 192px;
 	padding: 40px 0px;
 	box-shadow: inset -4px 0px 8px 0px rgba(0,0,0,0.50);
+	position: fixed;
 }
 article {
 	overflow: auto; /* for containing elements inside article */
@@ -90,6 +91,7 @@ article {
 	height: 100%;
 	display: inline-block;
 	padding: 40px 0px;
+	margin-left: 15%;
 }
 
 table {
@@ -232,6 +234,10 @@ td.symbol {
 	position: relative;
 }
 
+.market-open #add-stock {
+	border-bottom: 1px solid #ACB0B3;
+}
+
 .market-open input {
 	color: #000;
 }
@@ -247,6 +253,7 @@ td.symbol {
 	height: 100%;
 	background: transparent;
 	font-weight: 700;
+	width: 100%;
 }
 
 #add-stock input:focus {
@@ -281,6 +288,34 @@ td.symbol {
    font-weight: 400;
 }
 
+.market-open ::-webkit-input-placeholder {
+   color: #444;
+   font-family: Helvetica Neue;
+   font-size: 25px;
+   font-weight: 400;
+}
+
+.market-open :-moz-placeholder { /* Firefox 18- */
+   color: #444;
+   font-family: Helvetica Neue;
+   font-size: 25px;
+   font-weight: 400;
+}
+
+.market-open ::-moz-placeholder {  /* Firefox 19+ */
+   color: #444;
+   font-family: Helvetica Neue;
+   font-size: 25px;
+   font-weight: 400;
+}
+
+.market-open :-ms-input-placeholder {  
+   color: #444;
+   font-family: Helvetica Neue;  
+   font-size: 25px;
+   font-weight: 400;
+}
+
 .autocomplete-container {
 	width: 102%; 
 	background: black; 
@@ -289,10 +324,20 @@ td.symbol {
 	top: 100%;
 	left: -1%;
 	margin: auto;
+	display: none;
+}
+
+.market-open .autocomplete-container{
+	border: 1px solid #ACB0B3;
+	background: white;
 }
 
 .autocomplete-item-outer.highlighted{
 	background: rgba(255,255,255,0.25);
+}
+
+.market-open .autocomplete-item-outer.highlighted{
+	background: rgba(0,0,0,0.25);
 }
 
 .autocomplete-item {
@@ -302,13 +347,19 @@ td.symbol {
 	height: 35px;
 	line-height: 35px;
 	margin: 0 10px;
+	font-weight: 300;
 }
 
+.market-open .autocomplete-item {
+	border-bottom: 1px solid #CCC;
+	color: #000;
+}
 .autocomplete-item-outer:last-child .autocomplete-item{
 	border: none;
 }
 
 .autocomplete-item__symbol {
+	font-weight: 500;
 	display: inline-block;
 	width: 30%;
 }
