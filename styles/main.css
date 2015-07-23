@@ -372,3 +372,79 @@ td.symbol {
 	display: inline-block;
 	float: right;
 }
+
+.notification {
+	font-size: 16px;
+	position: fixed;
+	opacity: 0;
+	bottom:   1%;
+}
+
+.notification .success {
+	padding: 10px;
+	color: #21CE99;
+	border: 2px solid #21CE99;
+	border-radius: 5px;
+}
+
+.notification .error {
+	padding: 10px;
+	color: #F9523A;
+	border: 2px solid #F9523A;
+	border-radius: 5px;
+}
+
+.icon-check {
+	font-size: 14px;
+	border-radius: 150px;
+	padding: 2px;
+	border: 2px solid #21CE99;
+	margin: 5px;
+}
+.icon-error {
+	font-size: 16px;
+	margin: 5px;
+}
+
+@keyframes slideUpAndDown {
+	0% {
+		transform: translate3d(0, 100%, 0);
+		opacity: 0;
+	}
+
+	35% {
+		transform: translate3d(0, 0%, 0);
+		opacity: 1;
+	}
+	65% {
+		transform: translate3d(0, 0%, 0);
+		opacity: 1;
+	}
+	100% {
+		transform: translate3d(0, 100%, 0);
+		opacity: 0;
+	}
+}
+
+.slideUpAndDown {
+	animation-name: slideUpAndDown;
+	animation-duration: 5s;
+	animation-fill-mode: both;
+}
+
+@keyframes fadeIn {
+  0% {
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+
+  100% {
+  	animation-timing-function: ease-in;
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation-duration: 1s;
+  animation-name: fadeIn;
+}

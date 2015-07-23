@@ -44,14 +44,14 @@ window.Investments = {
 						'<th class="chart-range" data-range="all" data-charttype="longRangePlot" data-text="ALL">ALL</th>' +
 					'</tr>' + 
 				'</table>' +
-			'</div>'
-		),
-		watchlist: _.template(
+			'</div>' +
 			'<form id="add-stock">' +
 				'<input name="add-stock__symbol" placeholder="Enter Symbol" autocomplete="off">' +
 				'<input style="display: none;" type="submit">' +
 				'<div style="display: none;" class="autocomplete-container"></div>' +
-			'</form>' +
+			'</form>'
+		),
+		watchlist: _.template(
 			'<table id="watchlist">' +
 				'<tr class="labels">' +
 					'<th>Symbol</th>' +
@@ -65,12 +65,12 @@ window.Investments = {
 				'<% _.each(quotes, function(quote) { %>' +
 					'<tr>' +
 						'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
-						'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
-						'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
-						'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.todayPL %></td>' + 
-						'<td class="<%= quote.totalPLClass %>">$<%= quote.MarketValue %></td>' + 
-						'<td class="<%= quote.totalPLClass %>">$<%= quote.Cost %></td>' + 
-						'<td class="<%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.todayPL %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>">$<%= quote.MarketValue %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>">$<%= quote.Cost %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 
 					'</tr>' +
 				'<% }) %>' +
 			'</table>'
@@ -181,7 +181,12 @@ window.Investments = {
 		if(_.contains(a, $symbol.val())) {
 			console.log('already have this in your portfolio!!');
 			$('input[name="add-stock__symbol"]').val('');
-			return false;
+			debugger
+			$('.notification').html('<div class="error"><span class="icon-error"></span>Already in portfolio<div>').addClass('slideUpAndDown');
+			setTimeout(function(){
+				$('.notification').html('').removeClass('slideUpAndDown');
+			}, 5000);
+			return;
 		}
 		var symbol_val = $symbol.val();
 		$symbol.val('');
@@ -196,8 +201,17 @@ window.Investments = {
 			return portfolio_entry.save();
 		}).then(function(entry) {
 			$('input[name="add-stock__symbol"]').val('');
+			$('.notification').html('<div class="success"><span class="icon-check"></span>Added to portfolio<div>').addClass('slideUpAndDown');
+			setTimeout(function(){
+				$('.notification').html('').removeClass('slideUpAndDown');
+			}, 5000);
+
+			// push into portfolio, fetch info about stock, massage data, push into this.quotes, rerender watchlist
+			that.fetchQuote(entry.get('symbol'));
+
+
 			// refresh whole page for now because havent figured out how to ONLY render watchlist
-			document.location.reload(true);
+			// document.location.reload(true);
 		});
 	},
 
@@ -534,6 +548,27 @@ window.Investments = {
 			$('body').addClass('market-open');
 			console.log('market open');
 		}
+	},
+	fetchQuote: function(symbol) {
+		var url = this.yahooYQL + this.quoteURL;
+		var symbols = [];
+		var portfolio = {};
+		this.portfolio[symbol] = { cost: undefined, shares: undefined };
+		// symbols = Object.keys(portfolio);
+		// if(symbols.length > 0) {
+		url += "%22" + symbol + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+		$.ajax({
+		    type: 'GET',
+		    url: url,
+		    context: this,
+		    success: function(data) {
+		    	this.quotes = this.quotes.concat(this.massageData([data.query.results.quote]));
+		    	$('.watchlist-container').html(this.template.watchlist({ 
+					quotes: this.quotes
+				}));
+		    }
+		});
+		// }
 	},
 	fetchQuotes: function() {
 		var url = this.yahooYQL + this.quoteURL;
