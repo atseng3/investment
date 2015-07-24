@@ -128,7 +128,7 @@ th, td {
 }
 
 #watchlist th, td {
-
+	text-align: right;
 }
 .labels th {
 	color: #ACB0B3;
@@ -137,8 +137,9 @@ th, td {
 #watchlist tr {
 	border-bottom: 1px solid #ACB0B3;
 }
-td.symbol {
+#watchlist th.symbol, td.symbol {
 	color: #ACB0B3;
+	text-align: left;
 }
 .num-shares {
 	color: #ACB0B3;

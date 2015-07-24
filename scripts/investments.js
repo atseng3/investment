@@ -11,18 +11,22 @@
 // http://chartapi.finance.yahoo.com/instrument/1.0/TSLA/chartdata;type=quote;range=1m/json
 
 window.Investments = {
+	// not used
+	historicalURL: 'select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22YHOO%22%20and%20startDate%20%3D%20%222009-09-11%22%20and%20endDate%20%3D%20%222010-03-10%22&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=',
 	chartAPI: 'https://chartapi.finance.yahoo.com/instrument/1.0/',
 	chartQuote: '/chartdata;type=quote;range=',
+	// not used
+	
 	yahooYQL: 'https://query.yahooapis.com/v1/public/yql?q=',
 	quoteURL: 'select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20in%20(',
 	autocompleteURL: 'http://d.yimg.com/autoc.finance.yahoo.com/autoc?query=',
-
-	historicalURL: 'select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22YHOO%22%20and%20startDate%20%3D%20%222009-09-11%22%20and%20endDate%20%3D%20%222010-03-10%22&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=',
 
 	portfolioValueToday: 0,
 
 	portfolio: {},
 	quotes: [],
+
+	autocompleteIndex: -1,
 
 	template: {
 		chartDefault: _.template(
@@ -61,11 +65,11 @@ window.Investments = {
 		watchlist: _.template(
 			'<table id="watchlist">' +
 				'<tr class="labels">' +
-					'<th>Symbol</th>' +
+					'<th class="symbol">Symbol</th>' +
 					'<th>Price</th>' +
 					'<th>% Change</th>' +
-					'<th>Daily Change</th>' +
-					'<th>Market Value</th>' +
+					'<th>Change</th>' +
+					'<th>Value</th>' +
 					'<th>Cost</th>' +
 					'<th>P/L</th>' +
 				'</tr>' +
@@ -74,9 +78,9 @@ window.Investments = {
 						'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
 						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
 						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
-						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.todayPL %></td>' + 
-						'<td class="fadeIn <%= quote.totalPLClass %>">$<%= quote.MarketValue %></td>' + 
-						'<td class="fadeIn <%= quote.totalPLClass %>">$<%= quote.Cost %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.todayPL %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.MarketValue %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.Cost %></td>' + 
 						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 
 					'</tr>' +
 				'<% }) %>' +
@@ -110,8 +114,6 @@ window.Investments = {
 		$('#add-stock').submit(_.bind(that.addStock, this));
 		$('input[name="add-stock__symbol"]').keyup(_.bind(that.stockAutocomplete, this));
 	},
-
-	autocompleteIndex: -1,
 
 	stockAutocomplete: function(event) {
 		event.preventDefault();
@@ -181,16 +183,28 @@ window.Investments = {
 	addStock: function(event) {
 		event.preventDefault();
 		this.autocompleteIndex = -1;
-		$('#add-stock .autocomplete-container').html('').hide();
-		var that = this;
+		var $autocomplete_container = $('#add-stock .autocomplete-container');
+		var $notification = $('.notification');
 		var $symbol = $('input[name="add-stock__symbol"]');
+		if($autocomplete_container.children().length == 0) {
+			$symbol.val('');
+			$notification.html('<div class="error"><span class="icon-error"></span>Invalid Symbol<div>').addClass('slideUpAndDown');
+			setTimeout(function(){
+				$notification.html('').removeClass('slideUpAndDown');
+			}, 5000);
+			return;
+		}
+
+		$symbol.val($($autocomplete_container.children()[0]).data('symbol'));
+		$autocomplete_container.html('').hide();
+		var that = this;
 		var a = _.map(this.quotes, function(quote){return quote.Symbol});
 		if(_.contains(a, $symbol.val())) {
 			console.log('already have this in your portfolio!!');
-			$('input[name="add-stock__symbol"]').val('');
-			$('.notification').html('<div class="error"><span class="icon-error"></span>Already in portfolio<div>').addClass('slideUpAndDown');
+			$symbol.val('');
+			$notification.html('<div class="error"><span class="icon-error"></span>Already in portfolio<div>').addClass('slideUpAndDown');
 			setTimeout(function(){
-				$('.notification').html('').removeClass('slideUpAndDown');
+				$notification.html('').removeClass('slideUpAndDown');
 			}, 5000);
 			return;
 		}
@@ -210,10 +224,10 @@ window.Investments = {
 				return [];
 			}
 		}).then(function(entry) {
-			$('input[name="add-stock__symbol"]').val('');
-			$('.notification').html('<div class="success"><span class="icon-check"></span>Added to portfolio<div>').addClass('slideUpAndDown');
+			$symbol.val('');
+			$notification.html('<div class="success"><span class="icon-check"></span>Added to portfolio<div>').addClass('slideUpAndDown');
 			setTimeout(function(){
-				$('.notification').html('').removeClass('slideUpAndDown');
+				$notification.html('').removeClass('slideUpAndDown');
 			}, 5000);
 
 			// push into portfolio, fetch info about stock, massage data, push into this.quotes, rerender watchlist
@@ -375,14 +389,14 @@ window.Investments = {
 		var PLPercent = PL / data.previous_close * 100;
 		// set portfolio value right not today to global variable
 		this.portfolioValueToday = data.series[data.series.length-1].close;
-		var portfolioValue = this.numberFormat(data.series[data.series.length-1].close, 2).toString().split('.').join('<span class="market-value__cents">.');
+		var portfolioValue = this.numberFormat(data.series[data.series.length-1].close, 2, false).toString().split('.').join('<span class="market-value__cents">.');
 		portfolioValue += '</span>';
 
 		$('.portfolio-value-container').html(this.template.portfolioValueDisplay({
 			portfolioValue: portfolioValue,
 			PLClass: PLClass, 
-			PL: '$'+this.numberFormat(PL, 2),
-			PLPercent: this.numberFormat(PLPercent, 2),
+			PL: this.numberFormat(PL, 2, true),
+			PLPercent: this.numberFormat(PLPercent, 2, false),
 			rangeText: rangeText
 		}));
 
@@ -616,7 +630,6 @@ window.Investments = {
 			}
 			
 		}).then(function(quotes){
-			debugger
 			var symbols = [];
 			var portfolio = {};
 			_.each(quotes, function(quote) {
@@ -654,11 +667,14 @@ window.Investments = {
 			sorted['PercentChange'] = quote.PercentChange;
 			if(portfolio[sorted['Symbol']].shares) {
 				sorted['Shares'] = portfolio[sorted['Symbol']].shares;
-				sorted['todayPL'] = (quote.Change / sorted['LastTradePriceOnly'] * quote.PreviousClose * sorted['Shares']).toFixed(2);
-				sorted['MarketValue'] = parseFloat(sorted['Shares'] * sorted['LastTradePriceOnly']).toFixed(2);
-				sorted['Cost'] = parseInt(portfolio[sorted['Symbol']].cost).toFixed(2);
-				sorted['totalPL'] = that.numberFormat(sorted['MarketValue'] - sorted['Cost'], 2, true);
-				sorted['totalPLClass'] = sorted['MarketValue'] - sorted['Cost'] >= 0 ? 'positive' : 'negative';				
+				sorted['todayPL'] = that.numberFormat((quote.Change / sorted['LastTradePriceOnly'] * quote.PreviousClose * sorted['Shares']), 2, true);
+				var marketValue = sorted['Shares'] * sorted['LastTradePriceOnly'];
+				var cost = portfolio[sorted['Symbol']].cost;
+
+				sorted['MarketValue'] = that.numberFormat(marketValue, 2, true);
+				sorted['Cost'] = that.numberFormat(cost, 2, true);
+				sorted['totalPL'] = that.numberFormat(marketValue - cost, 2, true);
+				sorted['totalPLClass'] = marketValue - cost >= 0 ? 'positive' : 'negative';				
 			} else {
 				sorted['Shares'] = 0;
 				sorted['todayPL'] = '-';
@@ -684,8 +700,12 @@ window.Investments = {
 			fnums = parts[0],
 			decimals = parts[1] ? (dsep || '.') + parts[1] : '',
 			money = money ? '$' : '';
-		fnums = fnums.replace(/-/, '-&');
-		fnums = fnums.split('&').join('$');
+		if(fnums.indexOf('-') > -1) {
+			fnums = fnums.replace(/-/, '-&');
+			fnums = fnums.split('&').join(money);
+		} else {
+			fnums = money + fnums;
+		}
 
 		return fnums.replace(/(\d)(?=(?:\d{3})+$)/g, '$1' + tsep) + decimals;
 	},

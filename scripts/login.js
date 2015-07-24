@@ -27,6 +27,7 @@ window.Login = {
 		});
 		$('.toggle-form').on('click', function(event) {
 			event.preventDefault();
+			$('#name').focus();
 			var switchto = $('form').data('switchto');
 			var action = $('form').data('action');
 			var $form = $('form');
@@ -45,7 +46,6 @@ window.Login = {
 			var $name = $('#name');
 			var $password = $('#password');
 			var $password_confirmation = $('#password-confirmation');
-			// debugger
 			if(action == 'login') {
 				Parse.User.logIn($name.val(), $password.val(), {
 					success: function(user) {
@@ -53,6 +53,7 @@ window.Login = {
 						window.location.href = "../";
 					},
 					error: function(user, error) {
+						$name.focus();
 						$name.val('').addClass('shake');
 						$password.val('').addClass('shake');
 						setTimeout(function(){
@@ -77,9 +78,19 @@ window.Login = {
 
 				user.signUp(null, {
 					success: function(user) {
-						window.location.href = "../";
+						var UserPortfolios = Parse.Object.extend('UserPortfolios');
+						var query = new Parse.Query(UserPortfolios);
+						query.count().then(function(number) {
+							var new_user_portfolio = new UserPortfolios();
+							new_user_portfolio.set('user', user);
+							new_user_portfolio.set('portfolioId', number+1);
+							return new_user_portfolio.save();
+						}).then(function() {
+							window.location.href = "../";
+						});
 					},
 					error: function(user, error) {
+						$name.focus();
 						$name.val('').addClass('shake');
 						$password.val('').addClass('shake');
 						$password_confirmation.val('').addClass('shake');
@@ -95,6 +106,9 @@ window.Login = {
 	},
 	startParse: function() {
 		Parse.initialize("2LZNpkBEtOWN6z6gkoyM5j9tl8XLsTggQb70O51b", "6U76pQ4YKLVKy3VOWhKk0V6l0qwhuzeAGQd7ycjf");
+		if(Parse.User.current()) {
+			Parse.User.logOut();
+		}
 		this.bindListeners();
 	},
 };
