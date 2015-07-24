@@ -22,19 +22,20 @@ window.Investments = {
 	portfolioValueToday: 0,
 
 	portfolio: {},
-	quotes: {},
+	quotes: [],
 
 	template: {
-		chart: _.template(
+		chartDefault: _.template(
 			'<div>' +
-				'<div class="market-value"><span class="market-value__sign">$ </span><%= portfolioValue %></div>' +
-				'<div class="day-gain <%= dayPLClass %>"><%= dayPL %> (<%= dayPercent %>%) <span class="day-gain__span">TODAY</span></div>' +
-				
+				'<div class="portfolio-value-container">' +
+					'<div class="market-value"><span class="market-value__sign">$ </span>0<span class="market-value__cents">.00</span></div>' +
+					'<div class="day-gain">$0.00 (0.00%) <span class="day-gain__span">TODAY</span></div>' +
+				'</div>' +
 				'<table id="chart-list">' + 
 				'<div id="chart-container" style="width: 1000px;height: 500px;margin: auto;">' +
 					'<svg id="chart" width="1000" height="500"></svg>' +
 				'</div>' +
-					'<tr class="<%= dayPLClass %>">' + 
+					'<tr>' + 
 						'<th class="chart-range" data-range="1d" data-charttype="oneDayPlot" data-text="TODAY">1D</th>' +
 						'<th class="chart-range" data-range="1m" data-charttype="longRangePlot" data-text="PAST MONTH" data-workdays="22">1M</th>' +
 						'<th class="chart-range" data-range="3m" data-charttype="longRangePlot" data-text="PAST 3 MONTHS" data-workdays="66">3M</th>' +
@@ -46,12 +47,18 @@ window.Investments = {
 				'</table>' +
 			'</div>'
 		),
-		watchlist: _.template(
+		portfolioValueDisplay: _.template(
+			'<div class="market-value"><span class="market-value__sign">$ </span><%= portfolioValue %></div>' +
+			'<div class="day-gain <%= PLClass %>"><%= PL %> (<%= PLPercent %>%) <span class="day-gain__span"><%= rangeText %></span></div>'
+		),
+		autocomplete: _.template(
 			'<form id="add-stock">' +
 				'<input name="add-stock__symbol" placeholder="Enter Symbol" autocomplete="off">' +
 				'<input style="display: none;" type="submit">' +
 				'<div style="display: none;" class="autocomplete-container"></div>' +
-			'</form>' +
+			'</form>'
+		),
+		watchlist: _.template(
 			'<table id="watchlist">' +
 				'<tr class="labels">' +
 					'<th>Symbol</th>' +
@@ -65,12 +72,12 @@ window.Investments = {
 				'<% _.each(quotes, function(quote) { %>' +
 					'<tr>' +
 						'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
-						'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
-						'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
-						'<td class="<%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.todayPL %></td>' + 
-						'<td class="<%= quote.totalPLClass %>">$<%= quote.MarketValue %></td>' + 
-						'<td class="<%= quote.totalPLClass %>">$<%= quote.Cost %></td>' + 
-						'<td class="<%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
+						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.todayPL %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>">$<%= quote.MarketValue %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>">$<%= quote.Cost %></td>' + 
+						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 
 					'</tr>' +
 				'<% }) %>' +
 			'</table>'
@@ -181,7 +188,11 @@ window.Investments = {
 		if(_.contains(a, $symbol.val())) {
 			console.log('already have this in your portfolio!!');
 			$('input[name="add-stock__symbol"]').val('');
-			return false;
+			$('.notification').html('<div class="error"><span class="icon-error"></span>Already in portfolio<div>').addClass('slideUpAndDown');
+			setTimeout(function(){
+				$('.notification').html('').removeClass('slideUpAndDown');
+			}, 5000);
+			return;
 		}
 		var symbol_val = $symbol.val();
 		$symbol.val('');
@@ -191,13 +202,22 @@ window.Investments = {
 		query.find().then(function(user_portfolio) {
 			var Portfolio = Parse.Object.extend('Portfolio');
 			var portfolio_entry = new Portfolio();
-			portfolio_entry.set('portfolioId', user_portfolio[0].get('portfolioId'));
-			portfolio_entry.set('symbol', symbol_val);
-			return portfolio_entry.save();
+			if(Array.isArray(user_portfolio) && user_portfolio[0]) {
+				portfolio_entry.set('portfolioId', user_portfolio[0].get('portfolioId'));
+				portfolio_entry.set('symbol', symbol_val);
+				return portfolio_entry.save();
+			} else {
+				return [];
+			}
 		}).then(function(entry) {
 			$('input[name="add-stock__symbol"]').val('');
-			// refresh whole page for now because havent figured out how to ONLY render watchlist
-			document.location.reload(true);
+			$('.notification').html('<div class="success"><span class="icon-check"></span>Added to portfolio<div>').addClass('slideUpAndDown');
+			setTimeout(function(){
+				$('.notification').html('').removeClass('slideUpAndDown');
+			}, 5000);
+
+			// push into portfolio, fetch info about stock, massage data, push into this.quotes, rerender watchlist
+			that.fetchQuote(entry.get('symbol'));
 		});
 	},
 
@@ -222,6 +242,9 @@ window.Investments = {
 			table: 'DailyQuotes',
 			ascending: 'createdAt',
 			callback: function($target, data) {
+				if(data.length == 0) {
+					return false;
+				}
 				var today = new Date();
 				if(today.getDay() == 0 || today.getDay() == 6) {
 					today = data[data.length-1].createdAt;
@@ -330,14 +353,43 @@ window.Investments = {
 		query.find().then(function(user_portfolio) {
 			var DataTable = Parse.Object.extend(parseCallback.table);
 			var query = new Parse.Query(DataTable);
-			query.equalTo('portfolioId', user_portfolio[0].get('portfolioId'));
-			query.ascending(parseCallback.ascending);
-			query.limit(1000);	
-			return query.find();
+			if(Array.isArray(user_portfolio) && user_portfolio[0]) {
+				query.equalTo('portfolioId', user_portfolio[0].get('portfolioId'));
+				query.ascending(parseCallback.ascending);
+				query.limit(1000);	
+				return query.find();
+			} else {
+				return [];
+			}
+			
 		}).then($.proxy(parseCallback.callback, this, $target));
 	},
 
 	plotUserMarketValueChart: function(data, range, rangeText) {
+		// rerender portfolioValues on page first
+		var PLClass = data.series[data.series.length-1].close - data.previous_close > 0 ? 'positive' : 'negative';
+		this.setSidebarColor(PLClass);
+		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
+
+		var PL = data.series[data.series.length-1].close - data.previous_close;
+		var PLPercent = PL / data.previous_close * 100;
+		// set portfolio value right not today to global variable
+		this.portfolioValueToday = data.series[data.series.length-1].close;
+		var portfolioValue = this.numberFormat(data.series[data.series.length-1].close, 2).toString().split('.').join('<span class="market-value__cents">.');
+		portfolioValue += '</span>';
+
+		$('.portfolio-value-container').html(this.template.portfolioValueDisplay({
+			portfolioValue: portfolioValue,
+			PLClass: PLClass, 
+			PL: '$'+this.numberFormat(PL, 2),
+			PLPercent: this.numberFormat(PLPercent, 2),
+			rangeText: rangeText
+		}));
+
+		$('#chart-list tr').removeClass().addClass(PLClass);
+
+		// plot chart
+
 		var parseDate = d3.time.format("%Y%m%d").parse;
 		var xAxisMin = data.ranges.dates.min;
 		var xAxisMax = data.ranges.dates.max;
@@ -377,16 +429,6 @@ window.Investments = {
 		if(range == '1d') {
 			lineGen.interpolate('basis');
 		}
-		var PLClass = data.series[data.series.length-1].close - data.previous_close > 0 ? 'positive' : 'negative';
-		var color = PLClass == 'positive' ? '#21CE99' : '#F9523A';
-
-		// set chart legends and PL
-		$('#chart-list tr').removeClass().addClass(PLClass);
-		$('.day-gain').removeClass('negative').removeClass('positive').addClass(PLClass);
-		var PL = data.series[data.series.length-1].close - data.previous_close;
-		var PLPercent = PL / data.previous_close * 100;
-		$('.day-gain').html(this.numberFormat(PL, 2)+' ('+this.numberFormat(PLPercent, 2)+'%) <span class="day-gain__span">'+rangeText+'</span>');
-		$('.day-gain__span').html(rangeText);
 
 		vis.append('svg:path')
 		.attr('d', lineGen(dataset))
@@ -535,6 +577,25 @@ window.Investments = {
 			console.log('market open');
 		}
 	},
+	// for individual symbol --> right now for adding symbol to portfolio
+	fetchQuote: function(symbol) {
+		var url = this.yahooYQL + this.quoteURL;
+		var symbols = [];
+		var portfolio = {};
+		this.portfolio[symbol] = { cost: undefined, shares: undefined };
+		url += "%22" + symbol + "%22)&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+		$.ajax({
+		    type: 'GET',
+		    url: url,
+		    context: this,
+		    success: function(data) {
+		    	this.quotes = this.quotes.concat(this.massageData([data.query.results.quote]));
+		    	$('.watchlist-container').html(this.template.watchlist({ 
+					quotes: this.quotes
+				}));
+		    }
+		});
+	},
 	fetchQuotes: function() {
 		var url = this.yahooYQL + this.quoteURL;
 		var that = this;
@@ -545,11 +606,17 @@ window.Investments = {
 			var Portfolio = Parse.Object.extend('Portfolio');
 			var query = new Parse.Query(Portfolio);
 			// assume only 1 portfolio per user right now
-			query.equalTo('portfolioId', user_portfolio[0].get('portfolioId'));
-			query.descending('shares');
-			query.addAscending('symbol');
-			return query.find();
+			if(Array.isArray(user_portfolio) && user_portfolio[0]) {
+				query.equalTo('portfolioId', user_portfolio[0].get('portfolioId'));
+				query.descending('shares');
+				query.addAscending('symbol');
+				return query.find();	
+			} else {
+				return [];
+			}
+			
 		}).then(function(quotes){
+			debugger
 			var symbols = [];
 			var portfolio = {};
 			_.each(quotes, function(quote) {
@@ -569,6 +636,8 @@ window.Investments = {
 			    	that.quotes = that.massageData(data.query.results.quote);
 			    	that.render();
 			    }});
+			} else {
+				that.render();
 			}
 		});
 		return;
@@ -621,39 +690,20 @@ window.Investments = {
 		return fnums.replace(/(\d)(?=(?:\d{3})+$)/g, '$1' + tsep) + decimals;
 	},
 	render: function() {
-		var portfolioValue = 0;
-		var dayPL = 0;
-		var dayPercent = 0;
-		var dayPLClass = 'positive';
-		_.each(this.quotes, function(quote) {
-			if(!isNaN(quote.MarketValue)) {
-				portfolioValue += parseFloat(quote.MarketValue);
-				dayPL += parseFloat(quote.todayPL);
-			}
-		});
-		dayPercent = dayPL / (portfolioValue - dayPL) * 100;
-		dayPLClass = dayPL >= 0 ? 'positive' : 'negative';
-		this.setSidebarColor(dayPLClass);
-		this.portfolioValueToday = portfolioValue;
-		portfolioValue = this.numberFormat(portfolioValue, 2);
-		
-		portfolioValue = portfolioValue.toString().split('.').join('<span class="market-value__cents">.');
-		portfolioValue += '</span>';
 		this.setBackgroundColor();
-		$('article').prepend(this.template.chart({ 
-			quotes: this.quotes, 
-			portfolioValue: portfolioValue, 
-			dayPL: this.numberFormat(dayPL, 2, true),
-			dayPercent: this.numberFormat(dayPercent, 2),
-			dayPLClass: dayPLClass
-		}));
+
+		$('.graph-container').html(this.template.chartDefault());
+		$('.add-stock-container').html(this.template.autocomplete());
 		$('.watchlist-container').html(this.template.watchlist({ 
-			quotes: this.quotes, 
-			portfolioValue: portfolioValue, 
-			dayPL: this.numberFormat(dayPL, 2, true),
-			dayPercent: this.numberFormat(dayPercent, 2),
-			dayPLClass: dayPLClass
+			quotes: this.quotes
 		}));
+
+		// resize chart
+		var WIDTH = $('#watchlist').width();
+	    var HEIGHT = WIDTH / 2;
+		$('#chart-container').width(WIDTH).height(HEIGHT);
+		$('#chart').width(WIDTH).height(HEIGHT);
+
 		this.bindListeners();
 	},
 	setSidebarColor: function(dayPLClass) {
