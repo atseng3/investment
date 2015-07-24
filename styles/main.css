@@ -328,6 +328,18 @@ th, td {
 	background: white;
 }
 
+.autocomplete-item-outer {
+	cursor: pointer;
+}
+
+.autocomplete-item-outer:hover {
+	background: rgba(255,255,255,0.25);
+}
+
+.market-open .autocomplete-item-outer:hover {
+	background: rgba(0,0,0,0.25);
+}
+
 .autocomplete-item-outer.highlighted{
 	background: rgba(255,255,255,0.25);
 }

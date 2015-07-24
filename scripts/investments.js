@@ -112,7 +112,13 @@ window.Investments = {
 		});
 		$('th.chart-range[data-range="1d"]').click();
 		$('#add-stock').submit(_.bind(that.addStock, this));
+		$('.autocomplete-container').click(_.bind(that.addStock, this));
 		$('input[name="add-stock__symbol"]').keyup(_.bind(that.stockAutocomplete, this));
+		$('body').click(function(event) {
+			if(!$(event.target).data('symbol')) {
+				$('.autocomplete-container').html('').hide();
+			}
+		});
 	},
 
 	stockAutocomplete: function(event) {
@@ -164,7 +170,7 @@ window.Investments = {
 				var html = '';
 				_.each(data.ResultSet.Result, function(item) {
 					if(item.typeDisp == 'Equity' || item.typeDisp == 'Index' || item.typeDisp == 'ETF') {
-						html += '<div class="autocomplete-item-outer" data-symbol="'+item.symbol+'"><div class="autocomplete-item"><div class="autocomplete-item__symbol">'+item.symbol+'</div><div class="autocomplete-item__company">'+item.name+'</div><div class="autocomplete-item__exchDisp">'+item.exchDisp+'</div></div></div>';
+						html += '<div class="autocomplete-item-outer" data-symbol="'+item.symbol+'"><div class="autocomplete-item" data-symbol="'+item.symbol+'"><div class="autocomplete-item__symbol" data-symbol="'+item.symbol+'">'+item.symbol+'</div><div class="autocomplete-item__company" data-symbol="'+item.symbol+'">'+item.name+'</div><div class="autocomplete-item__exchDisp" data-symbol="'+item.symbol+'">'+item.exchDisp+'</div></div></div>';
 					}
 				});
 				$autocomplete_container.append(html);
@@ -195,7 +201,11 @@ window.Investments = {
 			return;
 		}
 
-		$symbol.val($($autocomplete_container.children()[0]).data('symbol'));
+		if(event.type == 'click') {
+			$symbol.val($(event.target).data('symbol'));
+		} else {
+			$symbol.val($($autocomplete_container.children()[0]).data('symbol'));
+		}
 		$autocomplete_container.html('').hide();
 		var that = this;
 		var a = _.map(this.quotes, function(quote){return quote.Symbol});
