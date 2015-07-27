@@ -313,6 +313,9 @@ window.Investments = {
 			table: 'PortfolioValues',
 			ascending: 'marketValue',
 			callback: function($target, data) {
+
+				var parseDate = d3.time.format("%Y%m%d").parse;
+
 				var workdays = $target.data('workdays');
 				var portfolioValue = {
 					previous_close: null,
@@ -337,7 +340,7 @@ window.Investments = {
 					allAvailableDates.push(moment(entry.get('date')));
 				});
 
-				portfolioValue.ranges.dates.max = moment.max(allAvailableDates).format('YYYYMMDD');
+				portfolioValue.ranges.dates.max = parseDate(moment.max(allAvailableDates).format('YYYYMMDD'));
 
 				var days = workdays;
 				var date = moment();
@@ -347,14 +350,14 @@ window.Investments = {
 						var formattedDate = date.format('YYYYMMDD');
 						if(temp[formattedDate]) {
 							var lastAvailableDate = formattedDate;
-							portfolioValue.series.push({ Date: formattedDate, close: temp[formattedDate]});
+							portfolioValue.series.push({ Date: parseDate(formattedDate), close: temp[formattedDate]});
 						} else {
-							portfolioValue.series.push({ Date: date.format('YYYYMMDD'), close: temp[lastAvailableDate]});
+							portfolioValue.series.push({ Date: parseDate(date.format('YYYYMMDD')), close: temp[lastAvailableDate]});
 						}
 					}
 					date = date.subtract(1, 'days');
 				}
-				portfolioValue.ranges.dates.min = formattedDate;
+				portfolioValue.ranges.dates.min = parseDate(formattedDate);
 				portfolioValue.series.reverse();
 				portfolioValue.previous_close = portfolioValue.series[0].close;
 

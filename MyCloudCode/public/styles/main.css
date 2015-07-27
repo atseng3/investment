@@ -8,7 +8,7 @@
 	color: #F9523A; /* RED */
 }
 body {
-	font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+	font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
 	margin: 0px;
 	min-width: 1250px;
 	height: 100%;
@@ -326,6 +326,18 @@ th, td {
 .market-open .autocomplete-container{
 	border: 1px solid #ACB0B3;
 	background: white;
+}
+
+.autocomplete-item-outer {
+	cursor: pointer;
+}
+
+.autocomplete-item-outer:hover {
+	background: rgba(255,255,255,0.25);
+}
+
+.market-open .autocomplete-item-outer:hover {
+	background: rgba(0,0,0,0.25);
 }
 
 .autocomplete-item-outer.highlighted{
