@@ -665,6 +665,9 @@ window.Investments = {
 			} else {
 				that.render();
 			}
+		}, function(error) {
+			Parse.User.logOut();
+			window.location.href = './login/'
 		});
 		return;
 	},
