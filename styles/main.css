@@ -456,3 +456,7 @@ th, td {
   animation-duration: 1s;
   animation-name: fadeIn;
 }
+
+.symbol__watchlist:hover {
+	cursor: pointer;
+}

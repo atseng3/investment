@@ -75,7 +75,7 @@ window.Investments = {
 				'</tr>' +
 				'<% _.each(quotes, function(quote) { %>' +
 					'<tr>' +
-						'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
+						'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares <%= quote.Shares != 0 ? "" : "symbol__watchlist" %>"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
 						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
 						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
 						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.todayPL %></td>' + 
@@ -114,11 +114,12 @@ window.Investments = {
 		$('#add-stock').submit(_.bind(that.addStock, this));
 		$('.autocomplete-container').click(_.bind(that.addStock, this));
 		$('input[name="add-stock__symbol"]').keyup(_.bind(that.stockAutocomplete, this));
-		$('body').click(function(event) {
-			if(!$(event.target).data('symbol')) {
-				$('.autocomplete-container').html('').hide();
-			}
-		});
+		// $('body').click(function(event) {
+		// 	debugger
+		// 	if(!$(event.target).data('symbol')) {
+		// 		$('.autocomplete-container').html('').hide();
+		// 	}
+		// });
 	},
 
 	stockAutocomplete: function(event) {
@@ -401,8 +402,8 @@ window.Investments = {
 		var PL = data.series[data.series.length-1].close - data.previous_close;
 		var PLPercent = PL / data.previous_close * 100;
 		// set portfolio value right not today to global variable
-		this.portfolioValueToday = data.series[data.series.length-1].close;
-		var portfolioValue = this.numberFormat(data.series[data.series.length-1].close, 2, false).toString().split('.').join('<span class="market-value__cents">.');
+		this.portfolioValueToday = data.series[data.series.length-1].close + this.cash;
+		var portfolioValue = this.numberFormat(this.portfolioValueToday, 2, false).toString().split('.').join('<span class="market-value__cents">.');
 		portfolioValue += '</span>';
 
 		$('.portfolio-value-container').html(this.template.portfolioValueDisplay({
@@ -620,6 +621,9 @@ window.Investments = {
 		    	$('.watchlist-container').html(this.template.watchlist({ 
 					quotes: this.quotes
 				}));
+				$('.symbol__watchlist').click(function(event) {
+					debugger
+				});
 		    }
 		});
 	},
@@ -630,6 +634,7 @@ window.Investments = {
 		var query = new Parse.Query(UserPortfolios);
 		query.equalTo('user', Parse.User.current());
 		query.find().then(function(user_portfolio) {
+			that.cash = user_portfolio[0].get('cash');
 			var Portfolio = Parse.Object.extend('Portfolio');
 			var query = new Parse.Query(Portfolio);
 			// assume only 1 portfolio per user right now
@@ -665,6 +670,9 @@ window.Investments = {
 			} else {
 				that.render();
 			}
+		}, function(error) {
+			Parse.User.logOut();
+			window.location.href = './login/'
 		});
 		return;
 	},
