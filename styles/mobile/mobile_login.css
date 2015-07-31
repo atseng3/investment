@@ -1,0 +1,33 @@
+@media only screen and (max-width : 480px) {
+	body {
+		font-size: 23px;
+	}
+	#content {
+		background-size: 200%;
+		background-color: rgba(0,0,0,0.1);
+	}
+	.logo {
+		line-height: 75px;
+		font-size: 27px;
+		width: 75px;
+		height: 75px;
+		border: 5px solid #21CE99;
+		opacity: 1;
+	}
+	.container {
+		width: 80%;
+	}
+	form {
+		width: 100%;
+		color: #FFF;
+		height: 100%;
+	}
+	form input {
+		border-bottom: 1px solid #D9D9D9;	
+	}
+	.login-disclaimer {
+		width: 100%;
+		margin-top: 25px;
+		font-size: 19px;
+	}
+}

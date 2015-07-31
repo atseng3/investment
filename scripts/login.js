@@ -84,6 +84,7 @@ window.Login = {
 							var new_user_portfolio = new UserPortfolios();
 							new_user_portfolio.set('user', user);
 							new_user_portfolio.set('portfolioId', number+1);
+							new_user_portfolio.set('cash', 0);
 							return new_user_portfolio.save();
 						}).then(function() {
 							window.location.href = "../";

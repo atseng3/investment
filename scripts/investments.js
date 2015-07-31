@@ -28,6 +28,8 @@ window.Investments = {
 
 	autocompleteIndex: -1,
 
+	cash: 0,
+
 	template: {
 		chartDefault: _.template(
 			'<div>' +
@@ -402,8 +404,8 @@ window.Investments = {
 		var PL = data.series[data.series.length-1].close - data.previous_close;
 		var PLPercent = PL / data.previous_close * 100;
 		// set portfolio value right not today to global variable
-		this.portfolioValueToday = data.series[data.series.length-1].close + this.cash;
-		var portfolioValue = this.numberFormat(this.portfolioValueToday, 2, false).toString().split('.').join('<span class="market-value__cents">.');
+		this.portfolioValueToday = data.series[data.series.length-1].close;
+		var portfolioValue = this.numberFormat(this.portfolioValueToday + this.cash, 2, false).toString().split('.').join('<span class="market-value__cents">.');
 		portfolioValue += '</span>';
 
 		$('.portfolio-value-container').html(this.template.portfolioValueDisplay({
@@ -621,9 +623,6 @@ window.Investments = {
 		    	$('.watchlist-container').html(this.template.watchlist({ 
 					quotes: this.quotes
 				}));
-				$('.symbol__watchlist').click(function(event) {
-					debugger
-				});
 		    }
 		});
 	},
