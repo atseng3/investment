@@ -12,6 +12,7 @@
     <link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="../styles/icons.css">
     <link rel="stylesheet" href="../styles/login.css">
+    <link rel="stylesheet" href="../styles/mobile/mobile_login.css">
 
   </head>
   <body>
@@ -21,10 +22,15 @@
 
         <form data-action="login" data-switchto="signup">
           <div class="title">Sign in to AT Investing</div>
-          <input id="name" type="text" placeholder="username" autocomplete="off" autofocus>
-          <input id="password" type="password" placeholder="password">
+          <input id="name" type="text" placeholder="username" autocomplete="off" autofocus required>
+          <input id="password" type="password" placeholder="password" required>
           <input id="password-confirmation" type="password" placeholder="confirm password">
-          <input style="display: none;" type="submit">
+          
+          <div class="submit-btn-container">
+            <button type="submit" id="submit-btn" class="btn">LOG IN</button>
+            <button type="button" id="demo-btn" class="btn">VIEW DEMO</button>
+          </div>
+          
           <div class="login-disclaimer">Don't have an account? <a class="toggle-form">Create one now.</a></div>
           <div class="signup-disclaimer" style="display: none;">Already have an account? <a class="toggle-form">Log in.</a></div>
         </form>

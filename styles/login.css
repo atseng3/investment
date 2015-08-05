@@ -10,15 +10,14 @@
 body {
 	font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
 	background: black;
-	font-size: 28px;
+	font-size: 24px;
 	text-align: center;
 	font-weight: 300;
 	position: relative;
-	height: 100vh;
+	overflow: auto;
 }
 
 #content {
-	height: 80%;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -29,6 +28,8 @@ body {
 	background-color: rgba(0,0,0,0.7);
 	background-blend-mode: color;
 	transition: all 0.7s ease;
+	margin: 5% 0px;
+	overflow: auto;
 }
 
 .logo {
@@ -51,7 +52,6 @@ form {
 	border: none;
 	border-radius: 8px;
 	width: 383px;
-	height: 253px;
 	color: #666;
 	transition: all 0.7s ease;
 }
@@ -66,9 +66,9 @@ form:hover input {
 
 input {	
 	width: 100%;
-	height: 75px;
+	height: 65px;
 	border: none;
-	font-size: 32px;
+	font-size: 24px;
 	border-bottom: 1px solid #666;
 	background: transparent;
 	color: #FFF;
@@ -104,28 +104,28 @@ input:focus {
 ::-webkit-input-placeholder {
    color: #666;
    font-family: Helvetica Neue;
-   font-size: 32px;
+   font-size: 24px;
    font-weight: 300;
 }
 
 :-moz-placeholder { /* Firefox 18- */
    color: #666;
    font-family: Helvetica Neue;
-   font-size: 32px;
+   font-size: 24px;
    font-weight: 300;
 }
 
 ::-moz-placeholder {  /* Firefox 19+ */
    color: #666;
    font-family: Helvetica Neue;
-   font-size: 32px;
+   font-size: 24px;
    font-weight: 300;
 }
 
 :-ms-input-placeholder {  
    color: #666;
    font-family: Helvetica Neue;
-   font-size: 32px;
+   font-size: 24px;
    
    font-weight: 300;
 }
@@ -149,13 +149,12 @@ input:focus {
 }
 
 form .title {
-	margin-bottom: 45px;
+	margin-bottom: 25px;
 }
 
 .container {
     width: 383px;
     margin: auto;
-    height: 300px;
 }
 
 @keyframes slideInDown {
@@ -197,4 +196,31 @@ form .title {
 input#password-confirmation {
 	z-index: -1;
 	opacity: 0;
+}
+
+.submit-btn-container {
+	height: 75px;
+	width: 100%;
+	margin-top: 20px;
+}
+
+.btn {
+	height: 75%;
+	width: 48%;
+	background: transparent;
+	color: #FFF;
+	border: 1px solid #FFF;
+	display: inline-block;
+	font-size: 20px;
+	border-radius: 3px;
+	cursor: pointer;
+	font-weight: 600;
+	transition: all 0.3s ease;
+
+}
+
+.btn:hover {
+	background: black;
+	color: #21CE99;
+	border: 1px solid #21CE99;
 }

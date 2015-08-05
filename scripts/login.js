@@ -8,11 +8,13 @@ window.Login = {
 		login: {
 			title: 'Sign in to AT Investing',
 			disclaimer: 'Dont have an account? <a class="toggle-form">Create one now.</a>',
+			buttonName: 'LOG IN',
 			animation: 'slideOutUp'
 		},
 		signup: {
 			title: 'Sign up for AT Investing',
 			disclaimer: 'Already have an account? <a class="toggle-form">Log in.</a>',
+			buttonName: 'SIGN UP',
 			animation: 'slideInDown'
 		}
 	},
@@ -37,7 +39,17 @@ window.Login = {
 			$form.data('switchto', action);
 			$form.data('action', switchto);
 			$('input#password-confirmation').removeClass().addClass(that.formData[switchto].animation);
+			$('#submit-btn').html(that.formData[switchto].buttonName);
 			
+		});
+
+		$('#demo-btn').click(function(event) {
+			event.preventDefault();
+			Parse.User.logIn('test-user', 'Testing1', {
+				success: function(user) {
+					window.location.href = '../';
+				}
+			});
 		});
 
 		$('form').submit(function(event) {
