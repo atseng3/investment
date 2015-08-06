@@ -19,10 +19,10 @@
 	table {
 		width: 100%;
 	}
-	table td, table th {
+	table#watchlist td, table#watchlist th {
 		display: none;
 	}
-	table td.mobile-show, table th.mobile-show {
+	table#watchlist td.mobile-show, table#watchlist th.mobile-show {
 		display: table-cell;
 	}
 }
