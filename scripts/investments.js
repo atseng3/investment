@@ -107,6 +107,7 @@ window.Investments = {
 		var that = this;
 		$('.btn-logout').click(function(event) {
 			Parse.User.logOut();
+			Parse.Analytics.track('logout', {});
 			window.location.href = './login/';
 	    });
 		_.each($('.chart-range'), function(range) {
@@ -255,6 +256,9 @@ window.Investments = {
 			return false;
 		}
 		this.toggleTab($target);
+		// tracking 
+		Parse.Analytics.track('chartTabClick', {range: $target.data('range')});
+
 		// call api for data points
 		this.fetchUserPlotData($target, $target.data('charttype'));
 	},
