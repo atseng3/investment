@@ -38,7 +38,7 @@ window.Investments = {
 					'<div class="day-gain">$0.00 (0.00%) <span class="day-gain__span">TODAY</span></div>' +
 				'</div>' +
 				'<table id="chart-list">' + 
-				'<div id="chart-container" style="width: 1000px;height: 500px;margin: auto;">' +
+				'<div id="chart-container" style="width: 1000px;height: 400px;margin: auto;">' +
 					'<svg id="chart" width="1000" height="500"></svg>' +
 				'</div>' +
 					'<tr>' + 
@@ -440,7 +440,7 @@ window.Investments = {
 		var vis = d3.select("#chart");
 		vis.selectAll("*").remove();
 		var WIDTH = $('#watchlist').width();
-	    var HEIGHT = WIDTH / 2;
+	    var HEIGHT = WIDTH * 2 / 5;
 		$('#chart-container').width(WIDTH).height(HEIGHT);
 		$('#chart').width(WIDTH).height(HEIGHT);
 	    var MARGINS = {
@@ -744,7 +744,7 @@ window.Investments = {
 
 		// resize chart
 		var WIDTH = $('#watchlist').width();
-	    var HEIGHT = WIDTH / 2;
+	    var HEIGHT = WIDTH * 2 / 5;
 		$('#chart-container').width(WIDTH).height(HEIGHT);
 		$('#chart').width(WIDTH).height(HEIGHT);
 

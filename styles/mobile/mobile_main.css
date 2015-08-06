@@ -15,6 +15,25 @@
 	}
 	#add-stock {
 		width: 100%;
+		height: 35px;
+	}
+	#add-stock input {
+		font-size: 18px;
+	}
+	::-webkit-input-placeholder {
+	   font-size: 18px;
+	}
+
+	:-moz-placeholder { /* Firefox 18- */
+	   font-size: 18px;
+	}
+
+	::-moz-placeholder {  /* Firefox 19+ */
+	   font-size: 18px;
+	}
+
+	:-ms-input-placeholder {  
+	   font-size: 18px;
 	}
 	table {
 		width: 100%;
@@ -24,5 +43,35 @@
 	}
 	table#watchlist td.mobile-show, table#watchlist th.mobile-show {
 		display: table-cell;
+	}
+	tr {
+		height: 35px;
+	}
+	.add-stock-container {
+		margin-top: 220px;
+	}
+	.graph-container {
+		background: #000;
+		position: fixed;
+		top: 0;
+		z-index: 100;
+	}
+	.market-value {
+		font-size: 32px;
+		display: inline-block;
+	}
+
+	.market-value__sign {
+		font-size: 16px;
+	}
+
+	.market-value__cents {
+		font-size: 16px;
+	}
+	.day-gain {
+		font-size: 10px;
+	}
+	#chart-list .chart-range.selected {
+		border-bottom: none;
 	}
 }

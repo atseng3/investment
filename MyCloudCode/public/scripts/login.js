@@ -47,8 +47,10 @@ window.Login = {
 
 		$('#demo-btn').click(function(event) {
 			event.preventDefault();
+
 			Parse.User.logIn('test-user', 'Testing1', {
 				success: function(user) {
+					Parse.Analytics.track('login', {category: 'test-user'});
 					window.location.href = '../';
 				}
 			});
@@ -56,6 +58,7 @@ window.Login = {
 
 		$('form').submit(function(event) {
 			event.preventDefault();
+
 			var action = $(event.currentTarget).data('action');
 			var $name = $('#name');
 			var $password = $('#password');
@@ -63,6 +66,7 @@ window.Login = {
 			if(action == 'login') {
 				Parse.User.logIn($name.val(), $password.val(), {
 					success: function(user) {
+						Parse.Analytics.track('login', {category: 'normal-user'});
 						// redirect to signed in homepage
 						window.location.href = "../";
 					},
