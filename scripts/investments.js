@@ -67,20 +67,20 @@ window.Investments = {
 		watchlist: _.template(
 			'<table id="watchlist">' +
 				'<tr class="labels">' +
-					'<th class="symbol">Symbol</th>' +
-					'<th>Price</th>' +
+					'<th class="mobile-show symbol">Symbol</th>' +
+					'<th class="mobile-show">Price</th>' +
 					'<th>% Change</th>' +
-					'<th>Change</th>' +
+					'<th class="mobile-show">Change</th>' +
 					'<th>Value</th>' +
 					'<th>Cost</th>' +
 					'<th>P/L</th>' +
 				'</tr>' +
 				'<% _.each(quotes, function(quote) { %>' +
 					'<tr>' +
-						'<td class="symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares <%= quote.Shares != 0 ? "" : "symbol__watchlist" %>"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
-						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
+						'<td class="mobile-show symbol <%= quote.Shares != 0 ? "symbol-position" : "" %>"><%= quote.Symbol %><br><span class="num-shares <%= quote.Shares != 0 ? "" : "symbol__watchlist" %>"><%= quote.Shares != 0 ? quote.Shares + " SHARES" : "WATCHLIST" %></span></td>' + 
+						'<td class="mobile-show fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>">$<%= quote.LastTradePriceOnly %></td>' + 
 						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.PercentChange %></td>' + 
-						'<td class="fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.todayPL %></td>' + 
+						'<td class="mobile-show fadeIn <%= quote.Change >= 0 ? "positive" : "negative" %>"><%= quote.todayPL %></td>' + 
 						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.MarketValue %></td>' + 
 						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.Cost %></td>' + 
 						'<td class="fadeIn <%= quote.totalPLClass %>"><%= quote.totalPL %></td>' + 

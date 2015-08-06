@@ -1,5 +1,7 @@
 * {
 	-webkit-font-smoothing: antialiased;
+	-moz-font-smoothing: antialiased;
+	-webkit-overflow-scrolling: touch;
 }
 .positive {
 	color: #21CE99;	/* GREEN */
@@ -24,41 +26,19 @@ body.market-closed {
 	background-color: #000;
 }
 
-.market-open .market-value {
+.market-open td.symbol.symbol-position, .market-open #chart-list .chart-range.selected, .market-open .market-value {
 	color: #000;
 }
 
-.market-closed .market-value {
-	color: #FFF;
-}
-
-.market-open td.symbol.symbol-position {
-	color: #000;
-}
-
-.market-closed td.symbol.symbol-position {
-	color: #FFF;
-}
-
-.market-open #chart-list .chart-range.selected {
-	color: #000;
-}
-
-.market-closed #chart-list .chart-range.selected {
+.market-closed td.symbol.symbol-position, .market-closed #chart-list .chart-range.selected, .market-closed .market-value {
 	color: #FFF;
 }
 
 .market-closed svg#chart {
-	background: -webkit-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
-	background: -o-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
-	background: -moz-linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
 	background: linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
 }
 
 .market-open svg#chart {
-	background: -webkit-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
-	background: -o-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
-	background: -moz-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
 	background: linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0));
 }
 aside {
@@ -161,8 +141,6 @@ th, td {
 }
 
 .tab.selected {
-	-moz-box-shadow: inset -5px 0px 0px 0px #F9523A;
-	-webkit-box-shadow: inset -5px 0px 0px 0px #F9523A;
 	box-shadow: inset -5px 0px 0px 0px #F9523A;
 }
 
