@@ -29,7 +29,8 @@ window.Login = {
 		});
 		$('.toggle-form').on('click', function(event) {
 			event.preventDefault();
-			$('#name').focus();
+			// do not focus for now: triggers iphone keyboard -- annoying
+			// $('#name').focus();
 			var switchto = $('form').data('switchto');
 			var action = $('form').data('action');
 			var $form = $('form');
@@ -39,6 +40,7 @@ window.Login = {
 			$form.data('switchto', action);
 			$form.data('action', switchto);
 			$('input#password-confirmation').removeClass().addClass(that.formData[switchto].animation);
+			$('input#password-confirmation').attr('disabled') ? $('input#password-confirmation').removeAttr('disabled') : $('input#password-confirmation').attr('disabled');
 			$('#submit-btn').html(that.formData[switchto].buttonName);
 			
 		});

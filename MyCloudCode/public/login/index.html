@@ -21,6 +21,9 @@
 
     <link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="../styles/icons.css">
+    <!-- include prefix free -->
+    <script src="../scripts/prefixfree.min.js"></script>
+
     <link rel="stylesheet" href="../styles/login.css">
     <link rel="stylesheet" href="../styles/mobile/mobile_login.css">
 
@@ -34,7 +37,7 @@
           <div class="title">Sign in to AT Investing</div>
           <input id="name" type="text" placeholder="username" autocomplete="off" autofocus required>
           <input id="password" type="password" placeholder="password" required>
-          <input id="password-confirmation" type="password" placeholder="confirm password">
+          <input id="password-confirmation" type="password" placeholder="confirm password" disabled>
 
           <div class="submit-btn-container">
             <button type="submit" id="submit-btn" class="btn">LOG IN</button>

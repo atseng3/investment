@@ -1,5 +1,6 @@
 * {
 	-webkit-font-smoothing: antialiased;
+	-webkit-overflow-scrolling: touch;
 }
 .positive {
 	color: #21CE99;	/* GREEN */
@@ -15,6 +16,7 @@ body {
 	font-weight: 300;
 	position: relative;
 	overflow: auto;
+	min-height: 100vh;
 }
 
 #content {
@@ -28,8 +30,9 @@ body {
 	background-color: rgba(0,0,0,0.7);
 	background-blend-mode: color;
 	transition: all 0.7s ease;
-	margin: 5% 0px;
-	overflow: auto;
+	/*margin-top: 3%;*/
+	/*overflow: auto;*/
+	padding-top: 3%;
 }
 
 .logo {
@@ -70,6 +73,7 @@ input {
 	border: none;
 	font-size: 24px;
 	border-bottom: 1px solid #666;
+	border-radius: 0px;
 	background: transparent;
 	color: #FFF;
 	padding-left: 15px;
@@ -161,11 +165,13 @@ form .title {
 	0% {
 		transform: translate3d(0, -100%, 0);
 		opacity: 0;
+		z-index: -1;
 	}
 
 	100% {
 		transform: translate3d(0, 0, 0);
 		opacity: 1;
+		z-index: 1;
 	}
 }
 
@@ -179,11 +185,13 @@ form .title {
   0% {
     transform: translate3d(0, 0, 0);
     opacity: 1;
+    z-index: 1;
   }
 
   100% {
     opacity: 0;
     transform: translate3d(0, -100%, 0);
+    z-index: -1;
   }
 }
 
