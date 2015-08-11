@@ -48,28 +48,31 @@
 		height: 35px;
 	}
 	.add-stock-container {
-		margin-top: 220px;
+		margin-top: 250px;
 	}
 	.graph-container {
+		padding-top: 20px;
 		background: #000;
 		position: fixed;
-		top: 0;
+		top: 0px;
+		left: 0px;
+		-webkit-backface-visibility:hidden;
 		z-index: 100;
 	}
 	.market-value {
-		font-size: 32px;
+		font-size: 36px;
 		display: inline-block;
 	}
 
 	.market-value__sign {
-		font-size: 16px;
+		font-size: 18px;
 	}
 
 	.market-value__cents {
-		font-size: 16px;
+		font-size: 18px;
 	}
 	.day-gain {
-		font-size: 10px;
+		font-size: 16px;
 	}
 	#chart-list .chart-range.selected {
 		border-bottom: none;
